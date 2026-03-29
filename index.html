@@ -1,14 +1,2351 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b1220" />
-    <link rel="manifest" href="/manifest.json" />
-    <title>InkyourQuote - Quote Generator</title>
-  </head>
-  <body class="bg-slate-950 text-white">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="description" content="QuoteCraft — Create beautiful, shareable quote cards">
+<title>QuoteCraft</title>
+<link rel="manifest" href="data:application/json,{}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Serif+Display:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Josefin+Sans:wght@100;300;400;700&family=DM+Sans:wght@300;400;500&family=Outfit:wght@200;300;400;500&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1c1c27;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0ede8;
+  --text-muted: rgba(240,237,232,0.45);
+  --accent: #c9a96e;
+  --accent2: #e8d5b0;
+  --danger: #e07070;
+  --radius: 16px;
+  --panel: 340px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ─── LAYOUT ─── */
+#app {
+  display: grid;
+  grid-template-columns: var(--panel) 1fr;
+  grid-template-rows: 56px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── TOPBAR ─── */
+#topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,10,15,0.9);
+  backdrop-filter: blur(20px);
+  z-index: 10;
+}
+
+.logo {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.logo span {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 300;
+}
+
+.topbar-divider { flex: 1; }
+
+.topbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.topbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+.topbar-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0a0f;
+  font-weight: 500;
+}
+.topbar-btn.primary:hover { background: var(--accent2); }
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.sidebar-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+/* ─── CATEGORY PILLS ─── */
+.category-scroll {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+.pill:hover { border-color: rgba(201,169,110,0.4); color: var(--accent); }
+.pill.active { background: var(--accent); border-color: var(--accent); color: #0a0a0f; font-weight: 500; }
+
+/* ─── BACKGROUND SECTION ─── */
+.bg-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.bg-swatch {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.bg-swatch:hover { transform: scale(1.05); }
+.bg-swatch.active { border-color: var(--accent); }
+.bg-swatch.active::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: rgba(0,0,0,0.4);
+  color: white;
+}
+
+.image-upload-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.image-upload-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(201,169,110,0.05); }
+
+/* ─── FONT PAIRING ─── */
+.font-pair-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.font-pair-card {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+}
+.font-pair-card:hover { border-color: rgba(201,169,110,0.3); background: rgba(201,169,110,0.03); }
+.font-pair-card.active { border-color: var(--accent); background: rgba(201,169,110,0.07); }
+
+.font-pair-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-family: 'DM Sans', sans-serif;
+}
+.font-pair-preview-heading {
+  font-size: 18px;
+  color: var(--text);
+  line-height: 1.2;
+}
+.font-pair-preview-body {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* ─── SLIDERS & INPUTS ─── */
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.control-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 70px;
+}
+
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 3px;
+  background: var(--border);
+  border-radius: 3px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+.control-value {
+  font-size: 11px;
+  color: var(--accent);
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: none;
+}
+input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+
+/* ─── ALIGNMENT ─── */
+.align-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.align-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.18s;
+  font-size: 15px;
+  text-align: center;
+}
+.align-btn:hover { border-color: rgba(201,169,110,0.4); color: var(--accent); }
+.align-btn.active { background: rgba(201,169,110,0.12); border-color: var(--accent); color: var(--accent); }
+
+/* ─── CANVAS AREA ─── */
+#canvas-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: #070709;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#canvas-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201,169,110,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+#canvas-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  flex-shrink: 0;
+  transition: max-width 0.4s cubic-bezier(0.23,1,0.32,1);
+}
+
+#quote-card {
+  width: 100%;
+  aspect-ratio: 1;
+  height: auto;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 48px;
+  transition: box-shadow 0.3s;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  cursor: pointer;
+}
+
+#quote-card:hover {
+  box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ─── QUOTE CONTENT ─── */
+#card-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 20px;
+}
+
+.quote-mark {
+  font-size: 96px;
+  line-height: 0.6;
+  opacity: 0.15;
+  font-family: 'Playfair Display', serif;
+  color: white;
+  flex-shrink: 0;
+  transition: opacity 0.3s;
+}
+
+.quote-body-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#quote-text-el {
+  line-height: 1.45;
+  color: white;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+
+#quote-author-el {
+  margin-top: 20px;
+  color: rgba(255,255,255,0.65);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+
+#card-watermark {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+/* ─── CANVAS TOOLBAR ─── */
+#canvas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-radius: 100px;
+  border: 1px solid var(--border);
+}
+
+.canvas-tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.canvas-tool-btn:hover { color: var(--text); background: var(--surface2); }
+.canvas-tool-btn.fav.active { color: var(--danger); }
+.canvas-tool-btn.fav.active:hover { color: var(--danger); }
+
+.canvas-tool-sep { width: 1px; height: 20px; background: var(--border); }
+
+/* ─── QUOTE TRANSITION ─── */
+.quote-enter {
+  animation: quoteIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes quoteIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── FAVORITES PANEL ─── */
+#fav-panel {
+  position: fixed;
+  top: 56px;
+  right: 0;
+  width: 360px;
+  height: calc(100vh - 56px);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 100;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow-y: auto;
+  padding: 24px;
+}
+#fav-panel.open { transform: translateX(0); }
+
+#fav-panel h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.fav-item {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface2);
+}
+.fav-item:hover { border-color: var(--accent); }
+
+.fav-item-quote {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fav-item-author {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.fav-item-del {
+  float: right;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.fav-item-del:hover { color: var(--danger); }
+
+.fav-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ─── TOAST ─── */
+#toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 999;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─── OVERLAY CLOSE ─── */
+#panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  display: none;
+}
+#panel-overlay.active { display: block; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  :root { --panel: 280px; }
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ─── GRADIENT OVERLAYS on card ─── */
+.card-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%);
+}
+
+/* ─── COLOR TINT OVERLAY ─── */
+#color-tint-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: background 0.3s;
+}
+
+/* ─── RANDOM BTN PULSE ─── */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(201,169,110,0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(201,169,110,0); }
+  100% { box-shadow: 0 0 0 0 rgba(201,169,110,0); }
+}
+
+.pulse { animation: pulse-ring 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+
+/* ─── ASPECT RATIO PICKER ─── */
+.ratio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ratio-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
+  position: relative;
+  overflow: hidden;
+}
+.ratio-card:hover {
+  border-color: rgba(201,169,110,0.45);
+  background: rgba(201,169,110,0.04);
+  transform: translateY(-1px);
+}
+.ratio-card.active {
+  border-color: var(--accent);
+  background: rgba(201,169,110,0.1);
+}
+.ratio-card.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 11px;
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  pointer-events: none;
+}
+
+.ratio-frame-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
+}
+
+.ratio-frame {
+  border: 1.5px solid var(--text-muted);
+  border-radius: 3px;
+  transition: border-color 0.2s;
+  background: rgba(255,255,255,0.04);
+}
+.ratio-card.active .ratio-frame { border-color: var(--accent); }
+.ratio-card:hover .ratio-frame  { border-color: rgba(201,169,110,0.6); }
+
+.ratio-platform-icon {
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.ratio-card:hover .ratio-platform-icon { color: var(--accent); }
+.ratio-card.active .ratio-platform-icon { color: var(--accent); }
+
+.ratio-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.3;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.2s;
+}
+.ratio-card.active .ratio-label { color: var(--accent); }
+
+.ratio-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  transition: color 0.2s;
+}
+.ratio-card:hover .ratio-name { color: var(--accent); }
+.ratio-card.active .ratio-name { color: var(--accent); }
+
+/* Card smooth resize */
+#quote-card {
+  transition: aspect-ratio 0.4s cubic-bezier(0.23,1,0.32,1),
+              width 0.4s cubic-bezier(0.23,1,0.32,1),
+              max-width 0.4s cubic-bezier(0.23,1,0.32,1),
+              box-shadow 0.3s;
+}
+
+/* ═══════ THEMES ═══════ */
+:root {
+  --ui-transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
+/* Light theme */
+html.theme-light {
+  --bg:        #f5f2ed;
+  --surface:   #ffffff;
+  --surface2:  #f0ece6;
+  --border:    rgba(0,0,0,0.1);
+  --text:      #1a1612;
+  --text-muted:rgba(26,22,18,0.45);
+  --accent:    #b8864e;
+  --accent2:   #d4a96a;
+  --danger:    #c0504f;
+}
+
+/* Sepia theme */
+html.theme-sepia {
+  --bg:        #1c160d;
+  --surface:   #241d11;
+  --surface2:  #2e2516;
+  --border:    rgba(201,169,110,0.12);
+  --text:      #f0ddb8;
+  --text-muted:rgba(240,221,184,0.4);
+  --accent:    #d4943a;
+  --accent2:   #e8b86d;
+  --danger:    #e07070;
+}
+
+/* Midnight theme */
+html.theme-midnight {
+  --bg:        #050508;
+  --surface:   #0d0d14;
+  --surface2:  #141420;
+  --border:    rgba(120,120,255,0.1);
+  --text:      #e8e6ff;
+  --text-muted:rgba(232,230,255,0.38);
+  --accent:    #9b8aff;
+  --accent2:   #c4b8ff;
+  --danger:    #e07070;
+}
+
+/* ─── THEME PICKER ─── */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.theme-swatch {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px;
+}
+.theme-swatch:hover  { transform: scale(1.06); }
+.theme-swatch.active { border-color: var(--accent); }
+.theme-swatch.active::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  background: rgba(0,0,0,0.3);
+  color: white;
+  border-radius: 8px;
+}
+
+.theme-swatch-bar {
+  height: 4px;
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+.theme-label {
+  font-size: 9px;
+  text-align: center;
+  margin-top: auto;
+  color: rgba(255,255,255,0.7);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  position: absolute;
+  bottom: 5px;
+  left: 0; right: 0;
+}
+
+/* ═══════ QUOTE COLOR ═══════ */
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qcolor-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+.qcolor-swatch:hover  { transform: scale(1.15); }
+.qcolor-swatch.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--bg); }
+
+.qcolor-custom {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px dashed var(--border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  overflow: hidden;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+.qcolor-custom:hover { border-color: var(--accent); color: var(--accent); }
+.qcolor-custom input[type=color] {
+  position: absolute;
+  opacity: 0;
+  width: 26px; height: 26px;
+  cursor: pointer;
+}
+
+/* ═══════ PRESET SYSTEM ═══════ */
+.preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.preset-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.preset-item:hover { border-color: var(--accent); background: rgba(201,169,110,0.05); }
+
+.preset-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.preset-info { flex: 1; min-width: 0; }
+.preset-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.preset-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.preset-del {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 2px;
+  transition: color 0.18s;
+  flex-shrink: 0;
+}
+.preset-del:hover { color: var(--danger); }
+
+.preset-save-row {
+  display: flex;
+  gap: 8px;
+}
+.preset-save-row input {
+  flex: 1;
+}
+.preset-save-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.preset-save-btn:hover { background: var(--accent); color: #0a0a0f; }
+
+.preset-empty {
+  text-align: center;
+  padding: 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ═══════ EXPORT MODAL ═══════ */
+#export-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+#export-modal.open { opacity: 1; pointer-events: all; }
+
+#export-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(12px);
+}
+
+#export-modal-box {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  padding: 32px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  transform: translateY(16px) scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.23,1,0.32,1);
+}
+#export-modal.open #export-modal-box { transform: translateY(0) scale(1); }
+
+#export-modal-box h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+#export-modal-box p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.export-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.export-opt {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+.export-opt:hover { border-color: var(--accent); background: rgba(201,169,110,0.06); }
+.export-opt.active { border-color: var(--accent); background: rgba(201,169,110,0.12); }
+
+.export-opt-icon {
+  font-size: 22px;
+  margin-bottom: 8px;
+  display: block;
+}
+.export-opt-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+}
+.export-opt-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  display: block;
+}
+
+.export-quality-row {
+  margin-bottom: 20px;
+  display: none;
+}
+.export-quality-row.visible { display: block; }
+.export-quality-row .sidebar-label { margin-bottom: 10px; }
+
+.export-actions {
+  display: flex;
+  gap: 10px;
+}
+.export-cancel {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.export-cancel:hover { border-color: var(--text-muted); color: var(--text); }
+.export-go {
+  flex: 2;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #0a0a0f;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.export-go:hover { background: var(--accent2); }
+
+/* ─── All elements use CSS var transitions ─── */
+#topbar, #sidebar, .sidebar-section, .sidebar-label,
+.pill, .bg-swatch, .font-pair-card, .ratio-card,
+.align-btn, input[type=text], textarea,
+.canvas-tool-btn, #canvas-toolbar, #canvas-area,
+.preset-item, .export-opt, #export-modal-box,
+#fav-panel, .fav-item {
+  transition: var(--ui-transition), box-shadow 0.3s;
+}
+
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="logo">Quote<span>Craft</span></div>
+    <div class="topbar-divider"></div>
+    <button class="topbar-btn" id="btn-shuffle">
+      <span>⟳</span> Random
+    </button>
+    <button class="topbar-btn" id="btn-favs">
+      <span>♡</span> Favorites <span id="fav-count-badge"></span>
+    </button>
+    <button class="topbar-btn primary" id="btn-download" onclick="openExportModal()">
+      <span>↓</span> Export
+    </button>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+
+
+    <!-- EDITOR THEME -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Editor Theme</div>
+      <div class="theme-grid" id="theme-grid"></div>
+    </div>
+
+    <!-- CATEGORY -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Category</div>
+      <div class="category-scroll" id="category-pills"></div>
+    </div>
+
+    <!-- QUOTE EDIT -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quote Text</div>
+      <textarea id="quote-input" rows="4" placeholder="Your quote here…"></textarea>
+      <div style="height:10px"></div>
+      <input type="text" id="author-input" placeholder="— Author Name">
+    </div>
+
+
+    <!-- ASPECT RATIO -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Platform Format</div>
+      <div class="ratio-grid" id="ratio-grid"></div>
+    </div>
+
+    <!-- BACKGROUND -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Background</div>
+      <div class="bg-grid" id="bg-swatches"></div>
+      <button class="image-upload-btn" id="btn-upload-img" onclick="document.getElementById('img-upload-input').click()">
+        ↑ Upload Custom Image
+      </button>
+      <input type="file" id="img-upload-input" accept="image/*" style="display:none">
+    </div>
+
+    <!-- OVERLAY TINT -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tint & Opacity</div>
+      <div class="control-row">
+        <span class="control-label">Tint</span>
+        <input type="color" id="tint-color" value="#000000" style="width:40px;height:28px;border:none;background:none;cursor:pointer;border-radius:6px;">
+        <div class="control-value" id="tint-opacity-val">50%</div>
+      </div>
+      <div class="control-row">
+        <span class="control-label">Opacity</span>
+        <input type="range" id="tint-opacity" min="0" max="90" value="50">
+      </div>
+    </div>
+
+    <!-- FONT PAIRING -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Font Pairing</div>
+      <div class="font-pair-grid" id="font-pairs"></div>
+    </div>
+
+    <!-- TYPOGRAPHY CONTROLS -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Typography</div>
+      <div class="control-row">
+        <span class="control-label">Size</span>
+        <input type="range" id="font-size" min="18" max="52" value="30">
+        <span class="control-value" id="font-size-val">30px</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">Weight</span>
+        <input type="range" id="font-weight" min="300" max="900" step="100" value="400">
+        <span class="control-value" id="font-weight-val">400</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">Spacing</span>
+        <input type="range" id="letter-spacing" min="-2" max="6" step="0.5" value="0">
+        <span class="control-value" id="letter-spacing-val">0</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">Style</span>
+        <div class="align-btns">
+          <button class="align-btn" id="btn-italic" onclick="toggleItalic()" title="Italic">𝐼</button>
+          <button class="align-btn" id="btn-uppercase" onclick="toggleUppercase()" title="Uppercase">AA</button>
+        </div>
+      </div>
+      <div class="control-row" style="align-items:flex-start;flex-direction:column;gap:10px;">
+        <span class="control-label">Text Color</span>
+        <div class="color-row" id="qcolor-row">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TEXT ALIGNMENT & VERTICAL -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Alignment</div>
+      <div style="margin-bottom:10px">
+        <div class="align-btns">
+          <button class="align-btn active" data-align="left" onclick="setTextAlign('left')">≡</button>
+          <button class="align-btn" data-align="center" onclick="setTextAlign('center')">☰</button>
+          <button class="align-btn" data-align="right" onclick="setTextAlign('right')">≡</button>
+        </div>
+      </div>
+      <div class="sidebar-label" style="margin-top:12px">Vertical Position</div>
+      <div class="align-btns">
+        <button class="align-btn active" data-valign="start" onclick="setVertAlign('start')" title="Top">⬆</button>
+        <button class="align-btn" data-valign="center" onclick="setVertAlign('center')" title="Middle">↔</button>
+        <button class="align-btn" data-valign="end" onclick="setVertAlign('end')" title="Bottom">⬇</button>
+      </div>
+    </div>
+
+
+    <!-- PRESETS -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Presets</div>
+      <div class="preset-list" id="preset-list"></div>
+      <div class="preset-save-row">
+        <input type="text" id="preset-name-input" placeholder="Name this preset…">
+        <button class="preset-save-btn" onclick="savePreset()">Save</button>
+      </div>
+    </div>
+
+    <!-- WATERMARK -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Watermark</div>
+      <input type="text" id="watermark-input" placeholder="@yourhandle" value="@quotecraft">
+    </div>
+
+    <!-- PADDING -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Card Padding</div>
+      <div class="control-row">
+        <span class="control-label">Padding</span>
+        <input type="range" id="card-padding" min="24" max="80" value="48">
+        <span class="control-value" id="card-padding-val">48px</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CANVAS AREA -->
+  <div id="canvas-area">
+    <div id="canvas-wrapper">
+      <div id="quote-card">
+        <!-- BG rendered via style -->
+        <div class="card-overlay card-vignette"></div>
+        <div class="card-overlay" id="color-tint-overlay"></div>
+
+        <div id="card-content">
+          <div class="quote-mark">"</div>
+          <div class="quote-body-wrap" id="quote-body-wrap">
+            <div id="quote-text-el">The only way to do great work is to love what you do.</div>
+            <div id="quote-author-el">— Steve Jobs</div>
+          </div>
+          <div id="card-watermark">@quotecraft</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="canvas-toolbar">
+      <button class="canvas-tool-btn fav" id="btn-fav-this" onclick="toggleFavorite()">
+        <span id="fav-icon">♡</span> Save
+      </button>
+      <div class="canvas-tool-sep"></div>
+      <button class="canvas-tool-btn" onclick="shuffleQuote()">⟳ Shuffle</button>
+      <div class="canvas-tool-sep"></div>
+      <button class="canvas-tool-btn" onclick="copyQuoteText()">⎘ Copy</button>
+      <div class="canvas-tool-sep"></div>
+      <button class="canvas-tool-btn" onclick="openExportModal()">↓ Export</button>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- EXPORT MODAL -->
+<div id="export-modal">
+  <div id="export-modal-backdrop" onclick="closeExportModal()"></div>
+  <div id="export-modal-box">
+    <h2>Export Quote Card</h2>
+    <p>Choose format and quality for your download.</p>
+
+    <div class="export-options" id="export-options">
+      <button class="export-opt active" data-fmt="png" onclick="selectExportFmt('png', this)">
+        <span class="export-opt-icon">🖼</span>
+        <span class="export-opt-name">PNG</span>
+        <span class="export-opt-desc">Lossless · transparent bg</span>
+      </button>
+      <button class="export-opt" data-fmt="jpg" onclick="selectExportFmt('jpg', this)">
+        <span class="export-opt-icon">📸</span>
+        <span class="export-opt-name">JPEG</span>
+        <span class="export-opt-desc">Smaller file · rich color</span>
+      </button>
+      <button class="export-opt" data-fmt="2x" onclick="selectExportFmt('2x', this)">
+        <span class="export-opt-icon">✦</span>
+        <span class="export-opt-name">PNG 2×</span>
+        <span class="export-opt-desc">Standard resolution</span>
+      </button>
+      <button class="export-opt" data-fmt="4x" onclick="selectExportFmt('4x', this)">
+        <span class="export-opt-icon">⬡</span>
+        <span class="export-opt-name">PNG 4×</span>
+        <span class="export-opt-desc">Ultra HD · print ready</span>
+      </button>
+    </div>
+
+    <div class="export-quality-row" id="jpg-quality-row">
+      <div class="sidebar-label">JPEG Quality</div>
+      <div class="control-row">
+        <input type="range" id="jpg-quality" min="60" max="100" value="92">
+        <span class="control-value" id="jpg-quality-val">92%</span>
+      </div>
+    </div>
+
+    <div class="export-actions">
+      <button class="export-cancel" onclick="closeExportModal()">Cancel</button>
+      <button class="export-go" onclick="runExport()">↓ Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAVORITES PANEL -->
+<div id="panel-overlay" onclick="closeFavPanel()"></div>
+<div id="fav-panel">
+  <h2>Saved Quotes</h2>
+  <div id="fav-list"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+
+// ══════════════════════════════════════════════════════
+//  ASPECT RATIOS
+// ══════════════════════════════════════════════════════
+
+// Platform SVG icons (inline, no emoji inconsistency)
+const PLATFORM_ICONS = {
+  instagram: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`,
+  twitter:   `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.261 5.632 5.903-5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+  facebook:  `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
+  pinterest: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>`,
+  linkedin:  `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
+  tiktok:    `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.17 8.17 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>`,
+  stories:   `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="3"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="10" x2="13" y2="10"/></svg>`,
+};
+
+const ASPECT_RATIOS = [
+  {
+    id: 'insta_sq',
+    name: '1 : 1',
+    platform: 'Instagram',
+    iconKey: 'instagram',
+    ratio: 1,
+    frameW: 26, frameH: 26,
+    maxWidth: 540,
+  },
+  {
+    id: 'insta_port',
+    name: '4 : 5',
+    platform: 'Instagram',
+    iconKey: 'instagram',
+    ratio: 4/5,
+    frameW: 22, frameH: 27,
+    maxWidth: 480,
+  },
+  {
+    id: 'story',
+    name: '9 : 16',
+    platform: 'Stories',
+    iconKey: 'stories',
+    ratio: 9/16,
+    frameW: 16, frameH: 28,
+    maxWidth: 340,
+  },
+  {
+    id: 'twitter_land',
+    name: '16 : 9',
+    platform: 'Twitter / X',
+    iconKey: 'twitter',
+    ratio: 16/9,
+    frameW: 32, frameH: 18,
+    maxWidth: 620,
+  },
+  {
+    id: 'twitter_sq',
+    name: '1 : 1',
+    platform: 'Twitter / X',
+    iconKey: 'twitter',
+    ratio: 1,
+    frameW: 26, frameH: 26,
+    maxWidth: 540,
+  },
+  {
+    id: 'facebook',
+    name: '1.91 : 1',
+    platform: 'Facebook',
+    iconKey: 'facebook',
+    ratio: 1.91,
+    frameW: 32, frameH: 17,
+    maxWidth: 620,
+  },
+  {
+    id: 'pinterest',
+    name: '2 : 3',
+    platform: 'Pinterest',
+    iconKey: 'pinterest',
+    ratio: 2/3,
+    frameW: 20, frameH: 30,
+    maxWidth: 420,
+  },
+  {
+    id: 'linkedin',
+    name: '1.2 : 1',
+    platform: 'LinkedIn',
+    iconKey: 'linkedin',
+    ratio: 1.2,
+    frameW: 30, frameH: 25,
+    maxWidth: 560,
+  },
+  {
+    id: 'tiktok',
+    name: '9 : 16',
+    platform: 'TikTok',
+    iconKey: 'tiktok',
+    ratio: 9/16,
+    frameW: 16, frameH: 28,
+    maxWidth: 340,
+  },
+];
+
+function initRatioGrid() {
+  const el = document.getElementById('ratio-grid');
+  el.innerHTML = ASPECT_RATIOS.map((r, i) => {
+    const isActive = i === 0;
+    const icon = PLATFORM_ICONS[r.iconKey] || '';
+    return `
+      <button class="ratio-card ${isActive ? 'active' : ''}" data-ratio-id="${r.id}" onclick="selectRatio(${i})" title="${r.platform} — ${r.name}">
+        <div class="ratio-frame-wrap">
+          <div class="ratio-frame" style="width:${r.frameW}px;height:${r.frameH}px;"></div>
+        </div>
+        <span class="ratio-platform-icon">${icon}</span>
+        <div class="ratio-label">
+          <div class="ratio-name">${r.name}</div>
+          <div>${r.platform}</div>
+        </div>
+      </button>
+    `;
+  }).join('');
+}
+
+function selectRatio(i) {
+  const r = ASPECT_RATIOS[i];
+  state.aspectRatio = r;
+
+  document.querySelectorAll('.ratio-card').forEach((c, j) => {
+    c.classList.toggle('active', j === i);
+  });
+
+  const card = document.getElementById('quote-card');
+  const wrapper = document.getElementById('canvas-wrapper');
+  const canvasArea = document.getElementById('canvas-area');
+
+  // For portrait/story formats constrain by available height instead
+  const canvasH = canvasArea.clientHeight - 120; // subtract toolbar + padding
+  const canvasW = canvasArea.clientWidth - 340 - 64; // subtract sidebar + padding
+  
+  let targetMaxWidth = r.maxWidth;
+  
+  // If taller than wide (portrait), constrain by height
+  if (r.ratio < 1) {
+    const maxByHeight = Math.floor(canvasH * r.ratio);
+    targetMaxWidth = Math.min(r.maxWidth, maxByHeight);
+  }
+  
+  // Never exceed available canvas width
+  targetMaxWidth = Math.min(targetMaxWidth, canvasW);
+
+  card.style.aspectRatio = r.ratio;
+  wrapper.style.maxWidth = Math.max(targetMaxWidth, 220) + 'px';
+
+  toast(r.platform + ' · ' + r.name);
+}
+
+
+// ══════════════════════════════════════════════════════
+//  THEMES
+// ══════════════════════════════════════════════════════
+
+const THEMES = [
+  {
+    id: 'dark', label: 'Dark', cls: '',
+    bg: '#0a0a0f', surface: '#13131a', accent: '#c9a96e',
+    bars: ['#13131a','#c9a96e','#1c1c27'],
+  },
+  {
+    id: 'light', label: 'Light', cls: 'theme-light',
+    bg: '#f5f2ed', surface: '#ffffff', accent: '#b8864e',
+    bars: ['#f5f2ed','#b8864e','#e8e3da'],
+  },
+  {
+    id: 'sepia', label: 'Sepia', cls: 'theme-sepia',
+    bg: '#1c160d', surface: '#241d11', accent: '#d4943a',
+    bars: ['#1c160d','#d4943a','#2e2516'],
+  },
+  {
+    id: 'midnight', label: 'Night', cls: 'theme-midnight',
+    bg: '#050508', surface: '#0d0d14', accent: '#9b8aff',
+    bars: ['#050508','#9b8aff','#141420'],
+  },
+];
+
+let currentTheme = THEMES[0];
+
+function initThemeGrid() {
+  const el = document.getElementById('theme-grid');
+  el.innerHTML = THEMES.map((t, i) => `
+    <div class="theme-swatch ${i === 0 ? 'active' : ''}"
+         style="background:${t.bg}"
+         data-theme="${t.id}"
+         onclick="applyTheme(${i})"
+         title="${t.label}">
+      ${t.bars.map(c => `<div class="theme-swatch-bar" style="background:${c}"></div>`).join('')}
+      <span class="theme-label">${t.label}</span>
+    </div>
+  `).join('');
+}
+
+function applyTheme(i) {
+  const t = THEMES[i];
+  currentTheme = t;
+  document.documentElement.className = t.cls;
+  document.querySelectorAll('.theme-swatch').forEach((s, j) => {
+    s.classList.toggle('active', j === i);
+  });
+  localStorage.setItem('qc_theme', t.id);
+  toast('Theme: ' + t.label);
+}
+
+function restoreTheme() {
+  const saved = localStorage.getItem('qc_theme');
+  if (!saved) return;
+  const i = THEMES.findIndex(t => t.id === saved);
+  if (i !== -1) applyTheme(i);
+}
+
+// ══════════════════════════════════════════════════════
+//  QUOTE TEXT COLOR
+// ══════════════════════════════════════════════════════
+
+const QUOTE_COLORS = [
+  { hex: '#ffffff', label: 'White' },
+  { hex: '#f0ede8', label: 'Cream' },
+  { hex: '#c9a96e', label: 'Gold' },
+  { hex: '#f4c2c2', label: 'Blush' },
+  { hex: '#a8d8ea', label: 'Sky' },
+  { hex: '#b5ead7', label: 'Mint' },
+  { hex: '#ffd700', label: 'Yellow' },
+  { hex: '#ff9999', label: 'Coral' },
+];
+
+let quoteColor = '#ffffff';
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+}
+
+
+function initQuoteColors() {
+  const row = document.getElementById('qcolor-row');
+  row.innerHTML = QUOTE_COLORS.map((c, i) => `
+    <div class="qcolor-swatch ${i === 0 ? 'active' : ''}"
+         style="background:${c.hex}"
+         title="${c.label}"
+         onclick="setQuoteColor('${c.hex}', this)">
+    </div>
+  `).join('') + `
+    <div class="qcolor-custom" title="Custom color" style="position:relative;">
+      +
+      <input type="color" id="qcolor-custom-input" value="#ffffff"
+             onchange="setQuoteColor(this.value, null, true)">
+    </div>
+  `;
+}
+
+function setQuoteColor(hex, el, isCustom) {
+  quoteColor = hex;
+  document.querySelectorAll('.qcolor-swatch').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  applyState();
+}
+
+// ══════════════════════════════════════════════════════
+//  PRESET SYSTEM
+// ══════════════════════════════════════════════════════
+
+function getPresets() {
+  try { return JSON.parse(localStorage.getItem('qc_presets') || '[]'); }
+  catch { return []; }
+}
+
+function savePresets(list) {
+  localStorage.setItem('qc_presets', JSON.stringify(list));
+}
+
+function capturePreset(name) {
+  return {
+    id: Date.now(),
+    name: name || 'Untitled',
+    createdAt: new Date().toLocaleDateString(),
+    bg: state.bg,
+    bgType: state.bgType,
+    fontPairId: state.fontPair.id,
+    fontSize: state.fontSize,
+    fontWeight: state.fontWeight,
+    letterSpacing: state.letterSpacing,
+    italic: state.italic,
+    uppercase: state.uppercase,
+    textAlign: state.textAlign,
+    vertAlign: state.vertAlign,
+    tintColor: state.tintColor,
+    tintOpacity: state.tintOpacity,
+    watermark: state.watermark,
+    padding: state.padding,
+    quoteColor: quoteColor,
+    thumb: state.bg, // use gradient as thumb bg
+  };
+}
+
+function savePreset() {
+  const input = document.getElementById('preset-name-input');
+  const name = input.value.trim() || 'Preset ' + (getPresets().length + 1);
+  const list = getPresets();
+  list.unshift(capturePreset(name));
+  if (list.length > 12) list.pop(); // cap at 12
+  savePresets(list);
+  input.value = '';
+  renderPresetList();
+  toast('✓ Preset saved: ' + name);
+}
+
+function loadPreset(id) {
+  const list = getPresets();
+  const p = list.find(x => x.id === id);
+  if (!p) return;
+
+  state.bg = p.bg;
+  state.bgType = p.bgType || 'gradient';
+  state.fontPair = FONT_PAIRS.find(f => f.id === p.fontPairId) || FONT_PAIRS[0];
+  state.fontSize = p.fontSize;
+  state.fontWeight = p.fontWeight;
+  state.letterSpacing = p.letterSpacing;
+  state.italic = p.italic;
+  state.uppercase = p.uppercase;
+  state.textAlign = p.textAlign;
+  state.vertAlign = p.vertAlign;
+  state.tintColor = p.tintColor;
+  state.tintOpacity = p.tintOpacity;
+  state.watermark = p.watermark;
+  state.padding = p.padding;
+  quoteColor = p.quoteColor || '#ffffff';
+
+  // Sync all UI controls
+  syncControlsToState();
+  applyState();
+  toast('✓ Preset loaded: ' + p.name);
+}
+
+function deletePreset(id) {
+  const list = getPresets().filter(x => x.id !== id);
+  savePresets(list);
+  renderPresetList();
+  toast('Preset deleted');
+}
+
+function renderPresetList() {
+  const el = document.getElementById('preset-list');
+  const list = getPresets();
+  if (list.length === 0) {
+    el.innerHTML = '<div class="preset-empty">No presets yet. Design something beautiful and save it!</div>';
+    return;
+  }
+  el.innerHTML = list.map(p => `
+    <div class="preset-item" onclick="loadPreset(${p.id})">
+      <div class="preset-thumb" style="background-image:${p.bg};background-size:cover;"></div>
+      <div class="preset-info">
+        <div class="preset-name">${p.name}</div>
+        <div class="preset-meta">${p.createdAt}</div>
+      </div>
+      <button class="preset-del" onclick="event.stopPropagation();deletePreset(${p.id})" title="Delete">×</button>
+    </div>
+  `).join('');
+}
+
+function syncControlsToState() {
+  // Sliders
+  const sliders = [
+    ['font-size', 'fontSize', 'font-size-val', 'px'],
+    ['font-weight', 'fontWeight', 'font-weight-val', ''],
+    ['letter-spacing', 'letterSpacing', 'letter-spacing-val', ''],
+    ['tint-opacity', 'tintOpacity', 'tint-opacity-val', '%'],
+    ['card-padding', 'padding', 'card-padding-val', 'px'],
+  ];
+  sliders.forEach(([id, key, valId, suf]) => {
+    const el = document.getElementById(id);
+    if (el) { el.value = state[key]; document.getElementById(valId).textContent = state[key] + suf; }
+  });
+
+  // Tint color
+  document.getElementById('tint-color').value = state.tintColor;
+
+  // Watermark
+  document.getElementById('watermark-input').value = state.watermark;
+
+  // Italic / Uppercase
+  document.getElementById('btn-italic').classList.toggle('active', state.italic);
+  document.getElementById('btn-uppercase').classList.toggle('active', state.uppercase);
+
+  // Text align
+  document.querySelectorAll('[data-align]').forEach(b => b.classList.toggle('active', b.dataset.align === state.textAlign));
+  document.querySelectorAll('[data-valign]').forEach(b => b.classList.toggle('active', b.dataset.valign === state.vertAlign));
+
+  // Font pair
+  document.querySelectorAll('.font-pair-card').forEach((c, i) => c.classList.toggle('active', FONT_PAIRS[i]?.id === state.fontPair.id));
+
+  // BG swatches
+  document.querySelectorAll('.bg-swatch').forEach((s, i) => s.classList.toggle('active', BACKGROUNDS[i]?.value === state.bg));
+
+  // Quote color swatches
+  document.querySelectorAll('.qcolor-swatch').forEach(s => s.classList.toggle('active', s.style.background === quoteColor || s.style.backgroundColor === quoteColor));
+}
+
+// ══════════════════════════════════════════════════════
+//  EXPORT MODAL
+// ══════════════════════════════════════════════════════
+
+let exportFmt = 'png';
+
+function openExportModal() {
+  document.getElementById('export-modal').classList.add('open');
+}
+
+function closeExportModal() {
+  document.getElementById('export-modal').classList.remove('open');
+}
+
+function selectExportFmt(fmt, btn) {
+  exportFmt = fmt;
+  document.querySelectorAll('.export-opt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('jpg-quality-row').classList.toggle('visible', fmt === 'jpg');
+}
+
+async function runExport() {
+  closeExportModal();
+  toast('Rendering…');
+
+  if (!window.html2canvas) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  }
+
+  const card = document.getElementById('quote-card');
+  let scale = 3;
+  if (exportFmt === '2x') scale = 2;
+  if (exportFmt === '4x') scale = 4;
+
+  const canvas = await html2canvas(card, {
+    scale,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    logging: false,
+  });
+
+  const link = document.createElement('a');
+  const ts = Date.now();
+
+  if (exportFmt === 'jpg') {
+    const q = parseInt(document.getElementById('jpg-quality').value) / 100;
+    link.download = 'quotecraft-' + ts + '.jpg';
+    link.href = canvas.toDataURL('image/jpeg', q);
+  } else {
+    link.download = 'quotecraft-' + ts + '.png';
+    link.href = canvas.toDataURL('image/png');
+  }
+  link.click();
+
+  const labels = { png:'PNG 3×', jpg:'JPEG', '2x':'PNG 2×', '4x':'PNG 4×' };
+  toast('✓ Exported as ' + labels[exportFmt]);
+}
+
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+
+const QUOTES = {
+  all: [],
+  inspiration: [
+    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+    { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
+    { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+    { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+    { text: "Do not go where the path may lead, go instead where there is no path and leave a trail.", author: "Ralph Waldo Emerson" },
+    { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
+    { text: "Whether you think you can or you think you can't, you're right.", author: "Henry Ford" },
+    { text: "Creativity is intelligence having fun.", author: "Albert Einstein" },
+  ],
+  life: [
+    { text: "Life is what happens when you're busy making other plans.", author: "John Lennon" },
+    { text: "In three words I can sum up everything I've learned about life: it goes on.", author: "Robert Frost" },
+    { text: "Life is not measured by the number of breaths we take, but by the moments that take our breath away.", author: "Maya Angelou" },
+    { text: "To live is the rarest thing in the world. Most people just exist.", author: "Oscar Wilde" },
+    { text: "The purpose of life is not to be happy. It is to be useful, to be honorable, to be compassionate.", author: "Ralph Waldo Emerson" },
+    { text: "Life is short, and it is here to be lived.", author: "Kate Winslet" },
+  ],
+  wisdom: [
+    { text: "The unexamined life is not worth living.", author: "Socrates" },
+    { text: "Knowing yourself is the beginning of all wisdom.", author: "Aristotle" },
+    { text: "The only true wisdom is in knowing you know nothing.", author: "Socrates" },
+    { text: "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.", author: "Rumi" },
+    { text: "The mind is everything. What you think, you become.", author: "Buddha" },
+    { text: "In seeking wisdom, the first step is silence, the second is listening.", author: "Solomon Ibn Gabirol" },
+  ],
+  love: [
+    { text: "The best thing to hold onto in life is each other.", author: "Audrey Hepburn" },
+    { text: "Where there is love there is life.", author: "Mahatma Gandhi" },
+    { text: "To love and be loved is to feel the sun from both sides.", author: "David Viscott" },
+    { text: "Love is composed of a single soul inhabiting two bodies.", author: "Aristotle" },
+    { text: "The heart wants what it wants, or else it does not care.", author: "Emily Dickinson" },
+    { text: "Love is not about how many days, months, or years you have been together. It is about how much you love each other every single day.", author: "Unknown" },
+  ],
+  success: [
+    { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+    { text: "The secret of success is to do the common thing uncommonly well.", author: "John D. Rockefeller" },
+    { text: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau" },
+    { text: "Don't be afraid to give up the good to go for the great.", author: "John D. Rockefeller" },
+    { text: "I find that the harder I work, the more luck I seem to have.", author: "Thomas Jefferson" },
+  ],
+  art: [
+    { text: "Every artist dips his brush in his own soul, and paints his own nature into his pictures.", author: "Henry Ward Beecher" },
+    { text: "Art is not what you see, but what you make others see.", author: "Edgar Degas" },
+    { text: "The purpose of art is washing the dust of daily life off our souls.", author: "Pablo Picasso" },
+    { text: "Creativity takes courage.", author: "Henri Matisse" },
+    { text: "An artist is not paid for his labor but for his vision.", author: "James Whistler" },
+  ],
+  philosophy: [
+    { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
+    { text: "He who has a why to live can bear almost any how.", author: "Friedrich Nietzsche" },
+    { text: "The only good is knowledge and the only evil is ignorance.", author: "Socrates" },
+    { text: "One cannot step twice in the same river.", author: "Heraclitus" },
+    { text: "I think therefore I am.", author: "René Descartes" },
+  ],
+};
+
+// Flatten all
+Object.keys(QUOTES).filter(k => k !== 'all').forEach(k => {
+  QUOTES.all.push(...QUOTES[k].map(q => ({ ...q, category: k })));
+});
+
+const BACKGROUNDS = [
+  { id: 'g1', value: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' },
+  { id: 'g2', value: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)' },
+  { id: 'g3', value: 'linear-gradient(135deg, #2d1b69, #11998e, #38ef7d)' },
+  { id: 'g4', value: 'linear-gradient(135deg, #141e30, #243b55)' },
+  { id: 'g5', value: 'linear-gradient(135deg, #3d0000, #250000)' },
+  { id: 'g6', value: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' },
+  { id: 'g7', value: 'linear-gradient(135deg, #1c0e00, #3d2800, #6b4800)' },
+  { id: 'g8', value: 'linear-gradient(135deg, #000000, #434343)' },
+  { id: 'g9', value: 'linear-gradient(135deg, #0a0a0a, #1a1a1a, #2a1a0a)' },
+  { id: 'g10', value: 'linear-gradient(135deg, #004e92, #000428)' },
+  { id: 'g11', value: 'linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #6b2fa0 100%)' },
+  { id: 'g12', value: 'linear-gradient(135deg, #1a0533, #4a0533, #1a0533)' },
+];
+
+const FONT_PAIRS = [
+  {
+    id: 'fp1', name: 'Playfair + Cormorant',
+    heading: "'Playfair Display', serif", body: "'Cormorant Garamond', serif",
+    previewH: 'Playfair Display', previewB: 'Cormorant Garamond',
+  },
+  {
+    id: 'fp2', name: 'Fraunces + DM Sans',
+    heading: "'Fraunces', serif", body: "'DM Sans', sans-serif",
+    previewH: 'Fraunces', previewB: 'DM Sans',
+  },
+  {
+    id: 'fp3', name: 'DM Serif + Outfit',
+    heading: "'DM Serif Display', serif", body: "'Outfit', sans-serif",
+    previewH: 'DM Serif Display', previewB: 'Outfit',
+  },
+  {
+    id: 'fp4', name: 'Libre Baskerville + Josefin',
+    heading: "'Libre Baskerville', serif", body: "'Josefin Sans', sans-serif",
+    previewH: 'Libre Baskerville', previewB: 'Josefin Sans',
+  },
+  {
+    id: 'fp5', name: 'Crimson Pro + Outfit',
+    heading: "'Crimson Pro', serif", body: "'Outfit', sans-serif",
+    previewH: 'Crimson Pro', previewB: 'Outfit',
+  },
+];
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+
+let state = {
+  category: 'all',
+  quoteIdx: 0,
+  quote: QUOTES.all[0],
+  bg: BACKGROUNDS[0].value,
+  bgType: 'gradient',  // 'gradient' | 'image'
+  customImage: null,
+  fontPair: FONT_PAIRS[0],
+  fontSize: 30,
+  fontWeight: 400,
+  letterSpacing: 0,
+  italic: false,
+  uppercase: false,
+  textAlign: 'left',
+  vertAlign: 'center',
+  tintColor: '#000000',
+  tintOpacity: 50,
+  watermark: '@quotecraft',
+  padding: 48,
+  aspectRatio: ASPECT_RATIOS[0],
+  favorites: JSON.parse(localStorage.getItem('qc_favs') || '[]'),
+};
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+
+function applyState() {
+  const card = document.getElementById('quote-card');
+  const textEl = document.getElementById('quote-text-el');
+  const authorEl = document.getElementById('quote-author-el');
+  const watermarkEl = document.getElementById('card-watermark');
+  const tintEl = document.getElementById('color-tint-overlay');
+  const bodyWrap = document.getElementById('quote-body-wrap');
+  const content = document.getElementById('card-content');
+
+  // Background — wipe all sub-properties first so nothing bleeds through
+  card.style.removeProperty('background');
+  card.style.removeProperty('background-image');
+  card.style.removeProperty('background-size');
+  card.style.removeProperty('background-position');
+  card.style.removeProperty('background-color');
+
+  if (state.bgType === 'image' && state.customImage) {
+    card.style.backgroundImage = 'url(' + state.customImage + ')';
+    card.style.backgroundSize = 'cover';
+    card.style.backgroundPosition = 'center';
+    card.style.backgroundColor = '#000';
+  } else {
+    card.style.backgroundImage = state.bg;
+  }
+
+  // Tint
+  const hex = state.tintColor;
+  const op = state.tintOpacity / 100;
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  tintEl.style.background = `rgba(${r},${g},${b},${op})`;
+
+  // Quote text
+  textEl.textContent = state.quote.text;
+  authorEl.textContent = '— ' + state.quote.author;
+  watermarkEl.textContent = state.watermark;
+
+  // Typography
+  textEl.style.color = quoteColor || '#ffffff';
+  textEl.style.fontFamily = state.fontPair.heading;
+  textEl.style.fontSize = state.fontSize + 'px';
+  textEl.style.fontWeight = state.fontWeight;
+  textEl.style.letterSpacing = state.letterSpacing + 'px';
+  textEl.style.fontStyle = state.italic ? 'italic' : 'normal';
+  textEl.style.textTransform = state.uppercase ? 'uppercase' : 'none';
+  textEl.style.textAlign = state.textAlign;
+  authorEl.style.color = hexToRgba(quoteColor || '#ffffff', 0.65);
+  authorEl.style.fontFamily = state.fontPair.body;
+  authorEl.style.textAlign = state.textAlign;
+  watermarkEl.style.textAlign = state.textAlign;
+  card.style.padding = state.padding + 'px';
+
+  // Vertical
+  bodyWrap.style.justifyContent = state.vertAlign === 'start' ? 'flex-start' : state.vertAlign === 'end' ? 'flex-end' : 'center';
+
+  // Fav icon
+  const isFav = state.favorites.some(f => f.text === state.quote.text);
+  document.getElementById('fav-icon').textContent = isFav ? '♥' : '♡';
+  document.getElementById('btn-fav-this').classList.toggle('active', isFav);
+
+  // Fav count
+  const count = state.favorites.length;
+  document.getElementById('fav-count-badge').textContent = count > 0 ? ` (${count})` : '';
+}
+
+// ══════════════════════════════════════════════════════
+//  QUOTE ACTIONS
+// ══════════════════════════════════════════════════════
+
+function getPool() {
+  return state.category === 'all' ? QUOTES.all : (QUOTES[state.category] || QUOTES.all);
+}
+
+function shuffleQuote() {
+  const pool = getPool();
+  let next;
+  do {
+    next = Math.floor(Math.random() * pool.length);
+  } while (pool.length > 1 && pool[next].text === state.quote.text);
+
+  state.quote = pool[next];
+  state.quoteIdx = next;
+
+  // Sync inputs
+  document.getElementById('quote-input').value = state.quote.text;
+  document.getElementById('author-input').value = state.quote.author;
+
+  // Animate
+  const textEl = document.getElementById('quote-text-el');
+  const authorEl = document.getElementById('quote-author-el');
+  textEl.classList.remove('quote-enter');
+  authorEl.classList.remove('quote-enter');
+  void textEl.offsetWidth;
+  textEl.classList.add('quote-enter');
+  authorEl.classList.add('quote-enter');
+
+  applyState();
+}
+
+function setCategory(cat) {
+  state.category = cat;
+  document.querySelectorAll('.pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.cat === cat);
+  });
+  shuffleQuote();
+}
+
+function copyQuoteText() {
+  navigator.clipboard.writeText(`"${state.quote.text}" — ${state.quote.author}`);
+  toast('Quote copied to clipboard');
+}
+
+// ══════════════════════════════════════════════════════
+//  FAVORITES
+// ══════════════════════════════════════════════════════
+
+function toggleFavorite() {
+  const idx = state.favorites.findIndex(f => f.text === state.quote.text);
+  if (idx === -1) {
+    state.favorites.unshift({ ...state.quote });
+    toast('♥ Added to favorites');
+  } else {
+    state.favorites.splice(idx, 1);
+    toast('Removed from favorites');
+  }
+  localStorage.setItem('qc_favs', JSON.stringify(state.favorites));
+  renderFavList();
+  applyState();
+}
+
+function renderFavList() {
+  const el = document.getElementById('fav-list');
+  if (state.favorites.length === 0) {
+    el.innerHTML = '<div class="fav-empty">No saved quotes yet.<br>Hit the ♡ to save ones you love.</div>';
+    return;
+  }
+  el.innerHTML = state.favorites.map((f, i) => `
+    <div class="fav-item" onclick="loadFav(${i})">
+      <button class="fav-item-del" onclick="event.stopPropagation(); deleteFav(${i})">×</button>
+      <div class="fav-item-quote">"${f.text}"</div>
+      <div class="fav-item-author">— ${f.author}</div>
+    </div>
+  `).join('');
+}
+
+function loadFav(i) {
+  state.quote = state.favorites[i];
+  document.getElementById('quote-input').value = state.quote.text;
+  document.getElementById('author-input').value = state.quote.author;
+  applyState();
+  closeFavPanel();
+}
+
+function deleteFav(i) {
+  state.favorites.splice(i, 1);
+  localStorage.setItem('qc_favs', JSON.stringify(state.favorites));
+  renderFavList();
+  applyState();
+}
+
+function openFavPanel() {
+  renderFavList();
+  document.getElementById('fav-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('active');
+}
+
+function closeFavPanel() {
+  document.getElementById('fav-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════════
+//  DOWNLOAD
+// ══════════════════════════════════════════════════════
+
+async function downloadCard() { return runExport(); }
+async function _downloadCard_orig() {
+  toast('Preparing export…');
+
+  // Use html2canvas via CDN
+  if (!window.html2canvas) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  }
+
+  const card = document.getElementById('quote-card');
+  const canvas = await html2canvas(card, {
+    scale: 3,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    logging: false,
+  });
+
+  const link = document.createElement('a');
+  link.download = `quotecraft-${Date.now()}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  toast('✓ Downloaded!');
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════════════════════════════════
+//  TYPOGRAPHY TOGGLES
+// ══════════════════════════════════════════════════════
+
+function toggleItalic() {
+  state.italic = !state.italic;
+  document.getElementById('btn-italic').classList.toggle('active', state.italic);
+  applyState();
+}
+
+function toggleUppercase() {
+  state.uppercase = !state.uppercase;
+  document.getElementById('btn-uppercase').classList.toggle('active', state.uppercase);
+  applyState();
+}
+
+function setTextAlign(align) {
+  state.textAlign = align;
+  document.querySelectorAll('[data-align]').forEach(b => {
+    b.classList.toggle('active', b.dataset.align === align);
+  });
+  applyState();
+}
+
+function setVertAlign(va) {
+  state.vertAlign = va;
+  document.querySelectorAll('[data-valign]').forEach(b => {
+    b.classList.toggle('active', b.dataset.valign === va);
+  });
+  applyState();
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT UI COMPONENTS
+// ══════════════════════════════════════════════════════
+
+function initCategories() {
+  const cats = ['all', 'inspiration', 'life', 'wisdom', 'love', 'success', 'art', 'philosophy'];
+  const labels = { all: 'All', inspiration: 'Inspire', life: 'Life', wisdom: 'Wisdom', love: 'Love', success: 'Success', art: 'Art', philosophy: 'Philosophy' };
+  const el = document.getElementById('category-pills');
+  el.innerHTML = cats.map(c => `
+    <button class="pill ${c === 'all' ? 'active' : ''}" data-cat="${c}" onclick="setCategory('${c}')">${labels[c]}</button>
+  `).join('');
+}
+
+function initBgSwatches() {
+  const el = document.getElementById('bg-swatches');
+  el.innerHTML = BACKGROUNDS.map((bg, i) => `
+    <div class="bg-swatch ${i === 0 ? 'active' : ''}" 
+         style="background:${bg.value}" 
+         data-bg="${i}"
+         onclick="selectBg(${i})">
+    </div>
+  `).join('');
+}
+
+function selectBg(i) {
+  state.bg = BACKGROUNDS[i].value;
+  state.bgType = 'gradient';
+  state.customImage = null;
+  document.querySelectorAll('.bg-swatch').forEach((s, j) => {
+    s.classList.toggle('active', j === i);
+  });
+  applyState();
+}
+
+function initFontPairs() {
+  const el = document.getElementById('font-pairs');
+  el.innerHTML = FONT_PAIRS.map((fp, i) => `
+    <div class="font-pair-card ${i === 0 ? 'active' : ''}" onclick="selectFontPair(${i})">
+      <div class="font-pair-name">${fp.name}</div>
+      <div class="font-pair-preview-heading" style="font-family:${fp.heading}">${fp.previewH}</div>
+      <div class="font-pair-preview-body" style="font-family:${fp.body}">${fp.previewB}</div>
+    </div>
+  `).join('');
+}
+
+function selectFontPair(i) {
+  state.fontPair = FONT_PAIRS[i];
+  document.querySelectorAll('.font-pair-card').forEach((c, j) => {
+    c.classList.toggle('active', j === i);
+  });
+  applyState();
+}
+
+// ══════════════════════════════════════════════════════
+//  EVENT LISTENERS
+// ══════════════════════════════════════════════════════
+
+document.getElementById('btn-shuffle').addEventListener('click', () => {
+  document.getElementById('btn-shuffle').classList.add('pulse');
+  setTimeout(() => document.getElementById('btn-shuffle').classList.remove('pulse'), 1200);
+  shuffleQuote();
+});
+
+document.getElementById('btn-favs').addEventListener('click', openFavPanel);
+// Export handled by openExportModal() via onclick
+
+document.getElementById('quote-input').addEventListener('input', e => {
+  state.quote = { ...state.quote, text: e.target.value };
+  applyState();
+});
+
+document.getElementById('author-input').addEventListener('input', e => {
+  state.quote = { ...state.quote, author: e.target.value };
+  applyState();
+});
+
+document.getElementById('watermark-input').addEventListener('input', e => {
+  state.watermark = e.target.value;
+  applyState();
+});
+
+// Sliders
+function bindSlider(id, stateKey, valId, suffix, cb) {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    state[stateKey] = parseFloat(el.value);
+    document.getElementById(valId).textContent = el.value + suffix;
+    if (cb) cb();
+    applyState();
+  });
+}
+
+bindSlider('font-size', 'fontSize', 'font-size-val', 'px');
+bindSlider('font-weight', 'fontWeight', 'font-weight-val', '');
+bindSlider('letter-spacing', 'letterSpacing', 'letter-spacing-val', '');
+bindSlider('tint-opacity', 'tintOpacity', 'tint-opacity-val', '%');
+bindSlider('card-padding', 'padding', 'card-padding-val', 'px');
+
+document.getElementById('jpg-quality').addEventListener('input', e => {
+  document.getElementById('jpg-quality-val').textContent = e.target.value + '%';
+});
+
+document.getElementById('tint-color').addEventListener('input', e => {
+  state.tintColor = e.target.value;
+  applyState();
+});
+
+// Image upload
+document.getElementById('img-upload-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.customImage = ev.target.result;
+    state.bgType = 'image';
+    // Deselect all bg swatches
+    document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+    applyState();
+    toast('✓ Image applied');
+  };
+  reader.readAsDataURL(file);
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); shuffleQuote(); }
+  if (e.key === 'f') toggleFavorite();
+  if (e.key === 'd') downloadCard();
+});
+
+// ══════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════
+
+function init() {
+  initThemeGrid();
+  initRatioGrid();
+  initCategories();
+  initBgSwatches();
+  initFontPairs();
+  initQuoteColors();
+  restoreTheme();
+  renderPresetList();
+
+  // Seed inputs
+  document.getElementById('quote-input').value = state.quote.text;
+  document.getElementById('author-input').value = state.quote.author;
+  document.getElementById('watermark-input').value = state.watermark;
+
+  applyState();
+
+  // Animate card in
+  setTimeout(() => {
+    document.getElementById('quote-text-el').classList.add('quote-enter');
+  }, 200);
+}
+
+init();
+
+// ══════════════════════════════════════════════════════
+//  PWA SERVICE WORKER (inline)
+// ══════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'quotecraft-v1';
+    const ASSETS = [
+      'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=DM+Sans:wght@300;400;500&display=swap'
+    ];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {})));
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        }))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+</script>
+</body>
 </html>
