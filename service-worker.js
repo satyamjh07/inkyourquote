@@ -1,4 +1,4 @@
-const CACHE_NAME = "quote-app-v1";
+const CACHE_NAME = "quote-app-v2";
 
 const ASSETS = [
   "/",
