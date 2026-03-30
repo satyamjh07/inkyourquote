@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="description" content="QuoteCraft — Create beautiful, shareable quote cards">
-<title>Inkyourquote</title>
+<title>QuoteCraft</title>
 <link rel="manifest" href="data:application/json,{}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,7 +53,7 @@ html, body {
   padding: 0 24px;
   gap: 16px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10,10,15,0.9);
+  background: var(--surface);
   backdrop-filter: blur(20px);
   z-index: 10;
 }
@@ -315,7 +315,7 @@ input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background: #070709;
+  background: var(--bg);
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
@@ -325,7 +325,7 @@ input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201,169,110,0.04) 0%, transparent 70%);
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -559,10 +559,287 @@ input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
 }
 #panel-overlay.active { display: block; }
 
-/* ─── RESPONSIVE ─── */
-@media (max-width: 900px) {
+
+/* Hide mobile-only elements on desktop — must be before mobile @media so it can be overridden */
+#mobile-nav,
+#mobile-action-bar,
+#mobile-sheet { display: none; }
+
+/* ════════════════════════════════════════════════════
+   RESPONSIVE — TABLET
+════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
   :root { --panel: 280px; }
+  .font-pair-grid { gap: 6px; }
 }
+
+/* ════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE  (≤ 768px)
+   Layout flips: canvas fills screen, sidebar becomes
+   a swipe-up bottom sheet with tab navigation.
+════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  html, body { overflow: hidden; }
+
+  /* ── App grid collapses to single column ── */
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 52px 1fr;
+    height: 100dvh;
+  }
+
+  /* ── Topbar: slim, icon-only actions ── */
+  #topbar {
+    padding: 0 14px;
+    gap: 8px;
+  }
+  .logo { font-size: 17px; }
+  .topbar-divider { flex: 1; }
+
+  /* Hide text labels on topbar buttons, show only icons */
+  .topbar-btn .btn-label { display: none; }
+  .topbar-btn {
+    padding: 7px 10px;
+    min-width: 36px;
+    justify-content: center;
+  }
+  .topbar-btn.primary { padding: 7px 14px; }
+  .topbar-btn.primary .btn-label { display: inline; }
+
+  /* ── Sidebar hides from grid ── */
+  #sidebar {
+    display: none;
+  }
+
+  /* ── Canvas area takes full remaining height ── */
+  #canvas-area {
+    grid-column: 1;
+    padding: 16px 16px 0 16px;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 120px; /* action bar 52px + nav 60px + gap 8px */
+    overflow: hidden;
+  }
+
+  #canvas-wrapper {
+    width: 100%;
+    max-width: 100% !important;
+  }
+
+  #quote-card {
+    border-radius: 14px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+
+  /* ── Hide desktop canvas toolbar ── */
+  #canvas-toolbar { display: none; }
+
+  /* ── Mobile bottom nav bar ── */
+  #mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 150;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: color 0.18s;
+    padding: 6px 2px;
+    border-radius: 10px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-nav-btn svg { flex-shrink: 0; }
+  .mobile-nav-btn.active { color: var(--accent); }
+  .mobile-nav-btn span { font-size: 9.5px; letter-spacing: 0.02em; }
+
+  /* ── Mobile quick action bar (above bottom nav) ── */
+  #mobile-action-bar {
+    display: flex;
+    position: fixed;
+    bottom: 60px; left: 0; right: 0;
+    height: 52px;
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    z-index: 149;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+  }
+
+  .mob-action-btn {
+    flex: 1;
+    height: 36px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.18s;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  .mob-action-btn:active { transform: scale(0.96); }
+  .mob-action-btn.fav-btn.active { color: var(--danger); border-color: var(--danger); }
+  .mob-action-btn.export-btn {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0a0f;
+    font-weight: 600;
+  }
+  .mob-action-btn.export-btn:active { background: var(--accent2); }
+
+  /* ── Bottom sheet panel ── */
+  #mobile-sheet {
+    display: block;
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 112px;           /* sit above action-bar(52) + nav(60) */
+    z-index: 140;
+    transform: translateY(calc(100% + 112px));
+    transition: transform 0.38s cubic-bezier(0.23, 1, 0.32, 1);
+    border-radius: 20px 20px 0 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.4);
+    max-height: calc(72dvh - 112px);
+    overflow: hidden;
+    flex-direction: column;
+  }
+  #mobile-sheet.open {
+    transform: translateY(0);
+  }
+
+  /* Sheet handle */
+  #sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+    cursor: grab;
+  }
+
+  /* Sheet tab bar */
+  #sheet-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 10px 14px 0;
+    flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #sheet-tabs::-webkit-scrollbar { display: none; }
+
+  .sheet-tab {
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+  .sheet-tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0a0f;
+    font-weight: 500;
+  }
+
+  /* Sheet content scroll area */
+  #sheet-content {
+    overflow-y: auto;
+    flex: 1;
+    padding: 14px 16px 32px;  /* extra bottom so last row isn't clipped */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  #sheet-content::-webkit-scrollbar { width: 3px; }
+  #sheet-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Sheet panel pages — shown/hidden by JS */
+  .sheet-panel { display: none; }
+  .sheet-panel.active { display: block; }
+
+  /* ── Mobile sheet section headers ── */
+  .mob-section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 16px 0 10px;
+  }
+  .mob-section-label:first-child { margin-top: 0; }
+
+  /* ── Adjust grids inside sheet ── */
+  .ratio-grid { grid-template-columns: repeat(3, 1fr); }
+  .bg-grid    { grid-template-columns: repeat(5, 1fr); }
+  .theme-grid { grid-template-columns: repeat(4, 1fr); }
+  .font-pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* ── Make sliders touch-friendly ── */
+  input[type="range"] { height: 5px; }
+  input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; }
+
+  /* ── Fav panel full-screen on mobile ── */
+  #fav-panel {
+    width: 100%;
+    top: 52px;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Toast above action bar ── */
+  #toast { bottom: 124px; }
+
+  /* ── Export modal bottom-anchored ── */
+  #export-modal { align-items: flex-end; }
+  #export-modal-box {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px calc(20px + env(safe-area-inset-bottom, 0));
+    transform: translateY(100%);
+  }
+  #export-modal.open #export-modal-box { transform: translateY(0); }
+  .export-options { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* ── Canvas card sizing on mobile ── */
+  #canvas-area::before { display: none; }
+}
+
+
 
 /* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar { width: 4px; }
@@ -1043,6 +1320,8 @@ html.theme-midnight {
 .pill, .bg-swatch, .font-pair-card, .ratio-card,
 .align-btn, input[type=text], textarea,
 .canvas-tool-btn, #canvas-toolbar, #canvas-area,
+#mobile-nav, #mobile-action-bar, #mobile-sheet, #sheet-tabs,
+.mob-action-btn, .sheet-tab, .mobile-nav-btn,
 .preset-item, .export-opt, #export-modal-box,
 #fav-panel, .fav-item {
   transition: var(--ui-transition), box-shadow 0.3s;
@@ -1056,13 +1335,13 @@ html.theme-midnight {
 
   <!-- TOPBAR -->
   <div id="topbar">
-    <div class="logo">Inkyour<span>Quote</span></div>
+    <div class="logo">Quote<span>Craft</span></div>
     <div class="topbar-divider"></div>
     <button class="topbar-btn" id="btn-shuffle">
-      <span>⟳</span> Random
+      <span>⟳</span><span class="btn-label"> Random</span>
     </button>
     <button class="topbar-btn" id="btn-favs">
-      <span>♡</span> Favorites <span id="fav-count-badge"></span>
+      <span>♡</span><span class="btn-label"> Favorites</span> <span id="fav-count-badge"></span>
     </button>
     <button class="topbar-btn primary" id="btn-download" onclick="openExportModal()">
       <span>↓</span> Export
@@ -1195,7 +1474,7 @@ html.theme-midnight {
     <!-- WATERMARK -->
     <div class="sidebar-section">
       <div class="sidebar-label">Watermark</div>
-      <input type="text" id="watermark-input" placeholder="@yourhandle" value="@inkyourquote">
+      <input type="text" id="watermark-input" placeholder="@yourhandle" value="@quotecraft">
     </div>
 
     <!-- PADDING -->
@@ -1224,7 +1503,7 @@ html.theme-midnight {
             <div id="quote-text-el">The only way to do great work is to love what you do.</div>
             <div id="quote-author-el">— Steve Jobs</div>
           </div>
-          <div id="card-watermark">@inkyourquote</div>
+          <div id="card-watermark">@quotecraft</div>
         </div>
       </div>
     </div>
@@ -1244,6 +1523,164 @@ html.theme-midnight {
 
 </div>
 
+
+
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<div id="mobile-nav">
+  <button class="mobile-nav-btn active" data-tab="canvas" onclick="mobileTab('canvas', this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+    <span>Canvas</span>
+  </button>
+  <button class="mobile-nav-btn" data-tab="background" onclick="mobileTab('background', this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a4.5 4.5 0 0 1 0 9 4.5 4.5 0 0 0 0 9"/><path d="M3 12h18"/></svg>
+    <span>Style</span>
+  </button>
+  <button class="mobile-nav-btn" data-tab="text" onclick="mobileTab('text', this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+    <span>Text</span>
+  </button>
+  <button class="mobile-nav-btn" data-tab="layout" onclick="mobileTab('layout', this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span>Layout</span>
+  </button>
+  <button class="mobile-nav-btn" data-tab="more" onclick="mobileTab('more', this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>
+    <span>More</span>
+  </button>
+</div>
+
+<!-- ══ MOBILE ACTION BAR ══ -->
+<div id="mobile-action-bar">
+  <button class="mob-action-btn" onclick="shuffleQuote()">⟳ Shuffle</button>
+  <button class="mob-action-btn fav-btn" id="mob-fav-btn" onclick="toggleFavorite()">
+    <span id="mob-fav-icon">♡</span> Save
+  </button>
+  <button class="mob-action-btn" onclick="copyQuoteText()">⎘ Copy</button>
+  <button class="mob-action-btn export-btn" onclick="openExportModal()">↓ Export</button>
+</div>
+
+<!-- ══ MOBILE BOTTOM SHEET ══ -->
+<div id="mobile-sheet">
+  <div id="sheet-handle"></div>
+
+  <!-- Tab bar -->
+  <div id="sheet-tabs">
+    <button class="sheet-tab active" data-panel="background" onclick="sheetTab('background', this)">Background</button>
+    <button class="sheet-tab" data-panel="text" onclick="sheetTab('text', this)">Text</button>
+    <button class="sheet-tab" data-panel="typography" onclick="sheetTab('typography', this)">Typography</button>
+    <button class="sheet-tab" data-panel="layout" onclick="sheetTab('layout', this)">Layout</button>
+    <button class="sheet-tab" data-panel="presets" onclick="sheetTab('presets', this)">Presets</button>
+    <button class="sheet-tab" data-panel="theme" onclick="sheetTab('theme', this)">Theme</button>
+  </div>
+
+  <!-- Scrollable content -->
+  <div id="sheet-content">
+
+    <!-- BACKGROUND PANEL -->
+    <div class="sheet-panel active" id="spanel-background">
+      <div class="mob-section-label">Gradients</div>
+      <div class="bg-grid" id="mob-bg-swatches"></div>
+      <div style="height:12px"></div>
+      <button class="image-upload-btn" onclick="document.getElementById('img-upload-input').click()">↑ Upload Image</button>
+
+      <div class="mob-section-label">Platform Format</div>
+      <div class="ratio-grid" id="mob-ratio-grid"></div>
+
+      <div class="mob-section-label">Tint</div>
+      <div class="control-row">
+        <span class="control-label">Color</span>
+        <input type="color" id="mob-tint-color" value="#000000" style="width:40px;height:28px;border:none;background:none;cursor:pointer;border-radius:6px;">
+        <span class="control-label" style="margin-left:8px">Opacity</span>
+        <input type="range" id="mob-tint-opacity" min="0" max="90" value="50" style="flex:1">
+        <span class="control-value" id="mob-tint-opacity-val">50%</span>
+      </div>
+    </div>
+
+    <!-- TEXT PANEL -->
+    <div class="sheet-panel" id="spanel-text">
+      <div class="mob-section-label">Quote Text</div>
+      <textarea id="mob-quote-input" rows="4" placeholder="Your quote here…" style="width:100%;margin-bottom:10px"></textarea>
+      <input type="text" id="mob-author-input" placeholder="— Author Name" style="width:100%;margin-bottom:12px">
+
+      <div class="mob-section-label">Text Color</div>
+      <div class="color-row" id="mob-qcolor-row"></div>
+
+      <div class="mob-section-label">Watermark</div>
+      <input type="text" id="mob-watermark-input" placeholder="@yourhandle" value="@quotecraft" style="width:100%">
+    </div>
+
+    <!-- TYPOGRAPHY PANEL -->
+    <div class="sheet-panel" id="spanel-typography">
+      <div class="mob-section-label">Font Pairing</div>
+      <div class="font-pair-grid" id="mob-font-pairs"></div>
+
+      <div class="mob-section-label">Size & Style</div>
+      <div class="control-row">
+        <span class="control-label">Size</span>
+        <input type="range" id="mob-font-size" min="14" max="40" value="20">
+        <span class="control-value" id="mob-font-size-val">14px</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">Weight</span>
+        <input type="range" id="mob-font-weight" min="300" max="900" step="100" value="400">
+        <span class="control-value" id="mob-font-weight-val">400</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">Spacing</span>
+        <input type="range" id="mob-letter-spacing" min="-2" max="6" step="0.5" value="0">
+        <span class="control-value" id="mob-letter-spacing-val">0</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">Style</span>
+        <div class="align-btns">
+          <button class="align-btn" id="mob-btn-italic" onclick="toggleItalic()" title="Italic">𝐼</button>
+          <button class="align-btn" id="mob-btn-uppercase" onclick="toggleUppercase()" title="Uppercase">AA</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAYOUT PANEL -->
+    <div class="sheet-panel" id="spanel-layout">
+      <div class="mob-section-label">Text Alignment</div>
+      <div class="align-btns" style="margin-bottom:14px">
+        <button class="align-btn active" data-mob-align="left" onclick="setTextAlign('left')">≡</button>
+        <button class="align-btn" data-mob-align="center" onclick="setTextAlign('center')">☰</button>
+        <button class="align-btn" data-mob-align="right" onclick="setTextAlign('right')">≡</button>
+      </div>
+      <div class="mob-section-label">Vertical Position</div>
+      <div class="align-btns" style="margin-bottom:14px">
+        <button class="align-btn active" data-mob-valign="start" onclick="setVertAlign('start')">⬆</button>
+        <button class="align-btn" data-mob-valign="center" onclick="setVertAlign('center')">↔</button>
+        <button class="align-btn" data-mob-valign="end" onclick="setVertAlign('end')">⬇</button>
+      </div>
+      <div class="mob-section-label">Card Padding</div>
+      <div class="control-row">
+        <input type="range" id="mob-card-padding" min="24" max="80" value="48">
+        <span class="control-value" id="mob-card-padding-val">48px</span>
+      </div>
+    </div>
+
+    <!-- PRESETS PANEL -->
+    <div class="sheet-panel" id="spanel-presets">
+      <div class="mob-section-label">Saved Presets</div>
+      <div class="preset-list" id="mob-preset-list"></div>
+      <div class="preset-save-row">
+        <input type="text" id="mob-preset-name-input" placeholder="Name this preset…">
+        <button class="preset-save-btn" onclick="saveMobPreset()">Save</button>
+      </div>
+    </div>
+
+    <!-- THEME PANEL -->
+    <div class="sheet-panel" id="spanel-theme">
+      <div class="mob-section-label">Editor Theme</div>
+      <div class="theme-grid" id="mob-theme-grid"></div>
+
+      <div class="mob-section-label">Favorites</div>
+      <div id="mob-fav-list"></div>
+    </div>
+
+  </div>
+</div>
 
 <!-- EXPORT MODAL -->
 <div id="export-modal">
@@ -1301,6 +1738,9 @@ html.theme-midnight {
 <div id="toast"></div>
 
 <script>
+
+// Defined first — referenced everywhere including early init
+const isMobile = () => window.innerWidth <= 768;
 
 // ══════════════════════════════════════════════════════
 //  ASPECT RATIOS
@@ -1451,6 +1891,7 @@ function selectRatio(i) {
   card.style.aspectRatio = r.ratio;
   wrapper.style.maxWidth = Math.max(targetMaxWidth, 220) + 'px';
 
+  if (isMobile() && typeof resizeMobileCanvas === 'function') resizeMobileCanvas();
   toast(r.platform + ' · ' + r.name);
 }
 
@@ -1502,6 +1943,9 @@ function applyTheme(i) {
   const t = THEMES[i];
   currentTheme = t;
   document.documentElement.className = t.cls;
+  // Update meta theme-color so browser chrome matches
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.content = t.bg;
   document.querySelectorAll('.theme-swatch').forEach((s, j) => {
     s.classList.toggle('active', j === i);
   });
@@ -2068,6 +2512,12 @@ function deleteFav(i) {
 }
 
 function openFavPanel() {
+  if (isMobile()) {
+    openSheet('theme'); // theme panel has the fav list on mobile
+    // Switch to the fav sub-section
+    setTimeout(() => sheetTab('theme', document.querySelector('.sheet-tab[data-panel="theme"]')), 50);
+    return;
+  }
   renderFavList();
   document.getElementById('fav-panel').classList.add('open');
   document.getElementById('panel-overlay').classList.add('active');
@@ -2316,9 +2766,429 @@ function init() {
   setTimeout(() => {
     document.getElementById('quote-text-el').classList.add('quote-enter');
   }, 200);
+
+  // Mobile
+  initMobileUI();
 }
 
 init();
+
+
+// ══════════════════════════════════════════════════════
+//  MOBILE UI
+// ══════════════════════════════════════════════════════
+
+// ── Bottom sheet open/close ──────────────────────────
+let sheetOpenTab = null;
+
+function openSheet(tab) {
+  const sheet = document.getElementById('mobile-sheet');
+  sheet.style.display = 'flex';
+  sheet.style.flexDirection = 'column';
+  requestAnimationFrame(() => {
+    sheet.classList.add('open');
+  });
+  sheetOpenTab = tab;
+  sheetTab(tab, document.querySelector('.sheet-tab[data-panel="' + tab + '"]'));
+}
+
+function closeSheet() {
+  const sheet = document.getElementById('mobile-sheet');
+  sheet.classList.remove('open');
+  sheetOpenTab = null;
+  // Reset nav buttons to canvas
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.mobile-nav-btn[data-tab="canvas"]').classList.add('active');
+}
+
+// ── Bottom nav tab switch ────────────────────────────
+function mobileTab(tab, btn) {
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (tab === 'canvas') {
+    closeSheet();
+    return;
+  }
+
+  // Map nav tabs to sheet panels
+  const tabToPanel = {
+    background: 'background',
+    text:       'text',
+    layout:     'layout',
+    more:       'presets',
+  };
+  const panel = tabToPanel[tab] || tab;
+  openSheet(panel);
+}
+
+// ── Sheet tab switch ─────────────────────────────────
+function sheetTab(panelId, btn) {
+  // Deactivate all panels and tabs
+  document.querySelectorAll('.sheet-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+
+  const panel = document.getElementById('spanel-' + panelId);
+  if (panel) panel.classList.add('active');
+  if (btn)   btn.classList.add('active');
+
+  // Sync mobile controls when panel opens
+  if (panelId === 'text')       syncMobTextControls();
+  if (panelId === 'typography') syncMobTypoControls();
+  if (panelId === 'layout')     syncMobLayoutControls();
+  if (panelId === 'presets')    renderMobPresets();
+  if (panelId === 'theme')      { renderMobThemeGrid(); renderMobFavList(); }
+  if (panelId === 'background') syncMobBgControls();
+}
+
+// ── Swipe to dismiss sheet ───────────────────────────
+(function() {
+  let startY = 0, dragging = false;
+  const handle = () => document.getElementById('sheet-handle');
+
+  document.addEventListener('touchstart', e => {
+    const h = handle();
+    if (h && h.contains(e.target)) {
+      startY = e.touches[0].clientY;
+      dragging = true;
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 0) {
+      document.getElementById('mobile-sheet').style.transform = 'translateY(' + dy + 'px)';
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (!dragging) return;
+    dragging = false;
+    const dy = e.changedTouches[0].clientY - startY;
+    const sheet = document.getElementById('mobile-sheet');
+    sheet.style.transform = '';
+    if (dy > 80) closeSheet();
+  });
+})();
+
+// ── Init mobile-specific UI components ──────────────
+
+function initMobileUI() {
+  if (!isMobile()) return;
+
+  // Scale font size down for mobile screen
+  // Mobile defaults
+  if (state.fontSize >= 28) {
+    state.fontSize = 14;
+    // Sync desktop slider
+    const deskFs = document.getElementById('font-size');
+    const deskFsV = document.getElementById('font-size-val');
+    if (deskFs)  deskFs.value  = 14;
+    if (deskFsV) deskFsV.textContent = '14px';
+    // Sync mobile slider default value attr
+    const mobFs = document.getElementById('mob-font-size');
+    const mobFsV = document.getElementById('mob-font-size-val');
+    if (mobFs)  { mobFs.value = 14; }
+    if (mobFsV) { mobFsV.textContent = '14px'; }
+  }
+
+  // Card padding 24px on mobile
+  state.padding = 24;
+  const deskPad = document.getElementById('card-padding');
+  const deskPadV = document.getElementById('card-padding-val');
+  const mobPad  = document.getElementById('mob-card-padding');
+  const mobPadV = document.getElementById('mob-card-padding-val');
+  if (deskPad)  deskPad.value = 24;
+  if (deskPadV) deskPadV.textContent = '24px';
+  if (mobPad)   mobPad.value = 24;
+  if (mobPadV)  mobPadV.textContent = '24px';
+
+  // BG swatches in sheet
+  const mobBg = document.getElementById('mob-bg-swatches');
+  if (mobBg) {
+    mobBg.innerHTML = BACKGROUNDS.map((bg, i) => `
+      <div class="bg-swatch ${i === 0 ? 'active' : ''}"
+           style="background:${bg.value}"
+           data-bg="${i}"
+           onclick="selectBg(${i}); syncDesktopBgSwatches();">
+      </div>
+    `).join('');
+  }
+
+  // Ratio grid in sheet
+  const mobRatio = document.getElementById('mob-ratio-grid');
+  if (mobRatio) {
+    mobRatio.innerHTML = ASPECT_RATIOS.map((r, i) => {
+      const icon = PLATFORM_ICONS[r.iconKey] || '';
+      return `
+        <button class="ratio-card ${i === 0 ? 'active' : ''}" data-ratio-id="${r.id}" onclick="selectRatio(${i})" title="${r.platform} — ${r.name}">
+          <div class="ratio-frame-wrap">
+            <div class="ratio-frame" style="width:${r.frameW}px;height:${r.frameH}px;"></div>
+          </div>
+          <span class="ratio-platform-icon">${icon}</span>
+          <div class="ratio-label">
+            <div class="ratio-name">${r.name}</div>
+            <div>${r.platform}</div>
+          </div>
+        </button>
+      `;
+    }).join('');
+  }
+
+  // Font pairs in sheet
+  const mobFonts = document.getElementById('mob-font-pairs');
+  if (mobFonts) {
+    mobFonts.innerHTML = FONT_PAIRS.map((fp, i) => `
+      <div class="font-pair-card ${i === 0 ? 'active' : ''}" onclick="selectFontPair(${i})">
+        <div class="font-pair-name">${fp.name}</div>
+        <div class="font-pair-preview-heading" style="font-family:${fp.heading};font-size:15px">${fp.previewH}</div>
+        <div class="font-pair-preview-body" style="font-family:${fp.body}">${fp.previewB}</div>
+      </div>
+    `).join('');
+  }
+
+  // Quote colors in sheet
+  initMobQuoteColors();
+
+  // Mobile sliders
+  bindMobSlider('mob-font-size',      'fontSize',      'mob-font-size-val',      'px');
+  bindMobSlider('mob-font-weight',    'fontWeight',    'mob-font-weight-val',    '');
+  bindMobSlider('mob-letter-spacing', 'letterSpacing', 'mob-letter-spacing-val', '');
+  bindMobSlider('mob-card-padding',   'padding',       'mob-card-padding-val',   'px');
+  bindMobSlider('mob-tint-opacity',   'tintOpacity',   'mob-tint-opacity-val',   '%');
+
+  // Tint color
+  const mobTint = document.getElementById('mob-tint-color');
+  if (mobTint) mobTint.addEventListener('input', e => {
+    state.tintColor = e.target.value;
+    document.getElementById('tint-color').value = e.target.value;
+    applyState();
+  });
+
+  // Text inputs
+  const mobQI = document.getElementById('mob-quote-input');
+  const mobAI = document.getElementById('mob-author-input');
+  const mobWM = document.getElementById('mob-watermark-input');
+  if (mobQI) { mobQI.value = state.quote.text; mobQI.addEventListener('input', e => { state.quote = {...state.quote, text: e.target.value}; document.getElementById('quote-input').value = e.target.value; applyState(); }); }
+  if (mobAI) { mobAI.value = state.quote.author; mobAI.addEventListener('input', e => { state.quote = {...state.quote, author: e.target.value}; document.getElementById('author-input').value = e.target.value; applyState(); }); }
+  if (mobWM) { mobWM.value = state.watermark; mobWM.addEventListener('input', e => { state.watermark = e.target.value; document.getElementById('watermark-input').value = e.target.value; applyState(); }); }
+
+  // Size the canvas so it fits above the action bar + nav
+  resizeMobileCanvas();
+}
+
+function bindMobSlider(id, stateKey, valId, suffix) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    state[stateKey] = parseFloat(el.value);
+    document.getElementById(valId).textContent = el.value + suffix;
+    // Sync desktop slider too
+    const desk = document.getElementById(id.replace('mob-', ''));
+    if (desk) { desk.value = el.value; }
+    const deskVal = document.getElementById(valId.replace('mob-', ''));
+    if (deskVal) deskVal.textContent = el.value + suffix;
+    applyState();
+  });
+}
+
+function resizeMobileCanvas() {
+  if (!isMobile()) return;
+  const topbarH  = 52;
+  const actionH  = 52;
+  const navH     = 60;
+  const padV     = 20;
+  const available = window.innerHeight - topbarH - actionH - navH - padV * 2;
+  const wrapper = document.getElementById('canvas-wrapper');
+  const card    = document.getElementById('quote-card');
+  const ratio   = state.aspectRatio ? state.aspectRatio.ratio : 1;
+  const maxW    = window.innerWidth - 32;
+
+  let w = maxW;
+  let h = w / ratio;
+
+  if (h > available) {
+    h = available;
+    w = h * ratio;
+  }
+
+  wrapper.style.width    = Math.floor(w) + 'px';
+  wrapper.style.maxWidth = Math.floor(w) + 'px';
+  card.style.aspectRatio = ratio;
+}
+
+// ── Sync mobile controls from state ─────────────────
+function syncMobTextControls() {
+  const qi = document.getElementById('mob-quote-input');
+  const ai = document.getElementById('mob-author-input');
+  const wm = document.getElementById('mob-watermark-input');
+  if (qi) qi.value = state.quote.text;
+  if (ai) ai.value = state.quote.author;
+  if (wm) wm.value = state.watermark;
+}
+
+function syncMobTypoControls() {
+  const pairs = [
+    ['mob-font-size',      'fontSize',      'mob-font-size-val',      'px'],
+    ['mob-font-weight',    'fontWeight',    'mob-font-weight-val',    ''],
+    ['mob-letter-spacing', 'letterSpacing', 'mob-letter-spacing-val', ''],
+  ];
+  pairs.forEach(([id, key, vid, s]) => {
+    const el = document.getElementById(id);
+    const vl = document.getElementById(vid);
+    if (el) el.value = state[key];
+    if (vl) vl.textContent = state[key] + s;
+  });
+  const bi = document.getElementById('mob-btn-italic');
+  const bu = document.getElementById('mob-btn-uppercase');
+  if (bi) bi.classList.toggle('active', state.italic);
+  if (bu) bu.classList.toggle('active', state.uppercase);
+  document.querySelectorAll('.font-pair-card').forEach((c, i) =>
+    c.classList.toggle('active', FONT_PAIRS[i]?.id === state.fontPair.id)
+  );
+}
+
+function syncMobLayoutControls() {
+  const cp = document.getElementById('mob-card-padding');
+  const cv = document.getElementById('mob-card-padding-val');
+  if (cp) cp.value = state.padding;
+  if (cv) cv.textContent = state.padding + 'px';
+  document.querySelectorAll('[data-mob-align]').forEach(b =>
+    b.classList.toggle('active', b.dataset.mobAlign === state.textAlign)
+  );
+  document.querySelectorAll('[data-mob-valign]').forEach(b =>
+    b.classList.toggle('active', b.dataset.mobValign === state.vertAlign)
+  );
+}
+
+function syncMobBgControls() {
+  const mt = document.getElementById('mob-tint-opacity');
+  const mv = document.getElementById('mob-tint-opacity-val');
+  const mc = document.getElementById('mob-tint-color');
+  if (mt) mt.value = state.tintOpacity;
+  if (mv) mv.textContent = state.tintOpacity + '%';
+  if (mc) mc.value = state.tintColor;
+  // Sync bg swatch active states
+  document.querySelectorAll('#mob-bg-swatches .bg-swatch').forEach((s, i) => {
+    s.classList.toggle('active', BACKGROUNDS[i]?.value === state.bg && state.bgType === 'gradient');
+  });
+}
+
+function syncDesktopBgSwatches() {
+  document.querySelectorAll('#bg-swatches .bg-swatch').forEach((s, i) => {
+    s.classList.toggle('active', BACKGROUNDS[i]?.value === state.bg && state.bgType === 'gradient');
+  });
+}
+
+// ── Mobile quote colors ──────────────────────────────
+function initMobQuoteColors() {
+  const row = document.getElementById('mob-qcolor-row');
+  if (!row) return;
+  row.innerHTML = QUOTE_COLORS.map((c, i) => `
+    <div class="qcolor-swatch ${i === 0 ? 'active' : ''}"
+         style="background:${c.hex}"
+         title="${c.label}"
+         onclick="setQuoteColor('${c.hex}', this)">
+    </div>
+  `).join('') + `
+    <div class="qcolor-custom" title="Custom" style="position:relative;">
+      +
+      <input type="color" value="#ffffff" onchange="setQuoteColor(this.value, null, true)">
+    </div>
+  `;
+}
+
+// ── Mobile theme grid ────────────────────────────────
+function renderMobThemeGrid() {
+  const el = document.getElementById('mob-theme-grid');
+  if (!el) return;
+  el.innerHTML = THEMES.map((t, i) => `
+    <div class="theme-swatch ${currentTheme.id === t.id ? 'active' : ''}"
+         style="background:${t.bg}"
+         data-theme="${t.id}"
+         onclick="applyTheme(${i}); renderMobThemeGrid();"
+         title="${t.label}">
+      ${t.bars.map(c => '<div class="theme-swatch-bar" style="background:' + c + '"></div>').join('')}
+      <span class="theme-label">${t.label}</span>
+    </div>
+  `).join('');
+}
+
+// ── Mobile favorites list (in sheet) ────────────────
+function renderMobFavList() {
+  const el = document.getElementById('mob-fav-list');
+  if (!el) return;
+  if (state.favorites.length === 0) {
+    el.innerHTML = '<div class="fav-empty" style="padding:16px 0">No saved quotes yet.</div>';
+    return;
+  }
+  el.innerHTML = state.favorites.map((f, i) => `
+    <div class="fav-item" onclick="loadFav(${i}); closeSheet();">
+      <button class="fav-item-del" onclick="event.stopPropagation();deleteFav(${i});renderMobFavList()">×</button>
+      <div class="fav-item-quote">"${f.text}"</div>
+      <div class="fav-item-author">— ${f.author}</div>
+    </div>
+  `).join('');
+}
+
+// ── Mobile presets ───────────────────────────────────
+function renderMobPresets() {
+  const el = document.getElementById('mob-preset-list');
+  if (!el) return;
+  const list = getPresets();
+  if (list.length === 0) {
+    el.innerHTML = '<div class="preset-empty">No presets yet.</div>';
+    return;
+  }
+  el.innerHTML = list.map(p => `
+    <div class="preset-item" onclick="loadPreset(${p.id}); closeSheet();">
+      <div class="preset-thumb" style="background-image:${p.bg};background-size:cover;"></div>
+      <div class="preset-info">
+        <div class="preset-name">${p.name}</div>
+        <div class="preset-meta">${p.createdAt}</div>
+      </div>
+      <button class="preset-del" onclick="event.stopPropagation();deletePreset(${p.id});renderMobPresets()">×</button>
+    </div>
+  `).join('');
+}
+
+function saveMobPreset() {
+  const input = document.getElementById('mob-preset-name-input');
+  const name = input.value.trim() || 'Preset ' + (getPresets().length + 1);
+  const list = getPresets();
+  list.unshift(capturePreset(name));
+  if (list.length > 12) list.pop();
+  savePresets(list);
+  input.value = '';
+  renderMobPresets();
+  renderPresetList(); // sync desktop
+  toast('✓ Preset saved: ' + name);
+}
+
+// ── Patch applyState to also sync mobile fav icon ───
+const _origApplyState = applyState;
+applyState = function() {
+  _origApplyState();
+  // Sync mobile fav button
+  const isFav = state.favorites.some(f => f.text === state.quote.text);
+  const mfi = document.getElementById('mob-fav-icon');
+  const mfb = document.getElementById('mob-fav-btn');
+  if (mfi) mfi.textContent = isFav ? '♥' : '♡';
+  if (mfb) mfb.classList.toggle('active', isFav);
+  // Sync mobile text inputs when quote shuffles
+  const qi = document.getElementById('mob-quote-input');
+  const ai = document.getElementById('mob-author-input');
+  if (qi && document.activeElement !== qi) qi.value = state.quote.text;
+  if (ai && document.activeElement !== ai) ai.value = state.quote.author;
+  // Resize canvas on mobile
+  if (isMobile() && typeof resizeMobileCanvas === 'function') resizeMobileCanvas();
+};
+
+// ── Resize on orientation change ─────────────────────
+window.addEventListener('resize', () => {
+  if (isMobile()) resizeMobileCanvas();
+});
 
 // ══════════════════════════════════════════════════════
 //  PWA SERVICE WORKER (inline)
