@@ -1,1 +1,1890 @@
 
+// Defined first — referenced everywhere including early init
+const isMobile = () => window.innerWidth <= 768;
+
+// ══════════════════════════════════════════════════════
+//  ASPECT RATIOS
+// ══════════════════════════════════════════════════════
+
+// Platform SVG icons (inline, no emoji inconsistency)
+const PLATFORM_ICONS = {
+  instagram: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`,
+  twitter:   `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.261 5.632 5.903-5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+  facebook:  `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
+  pinterest: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>`,
+  linkedin:  `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
+  tiktok:    `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.17 8.17 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>`,
+  stories:   `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="3"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="10" x2="13" y2="10"/></svg>`,
+};
+
+const ASPECT_RATIOS = [
+  {
+    id: 'insta_sq',
+    name: '1 : 1',
+    platform: 'Instagram',
+    iconKey: 'instagram',
+    ratio: 1,
+    frameW: 26, frameH: 26,
+    maxWidth: 540,
+  },
+  {
+    id: 'insta_port',
+    name: '4 : 5',
+    platform: 'Instagram',
+    iconKey: 'instagram',
+    ratio: 4/5,
+    frameW: 22, frameH: 27,
+    maxWidth: 480,
+  },
+  {
+    id: 'story',
+    name: '9 : 16',
+    platform: 'Stories',
+    iconKey: 'stories',
+    ratio: 9/16,
+    frameW: 16, frameH: 28,
+    maxWidth: 340,
+  },
+  {
+    id: 'twitter_land',
+    name: '16 : 9',
+    platform: 'Twitter / X',
+    iconKey: 'twitter',
+    ratio: 16/9,
+    frameW: 32, frameH: 18,
+    maxWidth: 620,
+  },
+  {
+    id: 'twitter_sq',
+    name: '1 : 1',
+    platform: 'Twitter / X',
+    iconKey: 'twitter',
+    ratio: 1,
+    frameW: 26, frameH: 26,
+    maxWidth: 540,
+  },
+  {
+    id: 'facebook',
+    name: '1.91 : 1',
+    platform: 'Facebook',
+    iconKey: 'facebook',
+    ratio: 1.91,
+    frameW: 32, frameH: 17,
+    maxWidth: 620,
+  },
+  {
+    id: 'pinterest',
+    name: '2 : 3',
+    platform: 'Pinterest',
+    iconKey: 'pinterest',
+    ratio: 2/3,
+    frameW: 20, frameH: 30,
+    maxWidth: 420,
+  },
+  {
+    id: 'linkedin',
+    name: '1.2 : 1',
+    platform: 'LinkedIn',
+    iconKey: 'linkedin',
+    ratio: 1.2,
+    frameW: 30, frameH: 25,
+    maxWidth: 560,
+  },
+  {
+    id: 'tiktok',
+    name: '9 : 16',
+    platform: 'TikTok',
+    iconKey: 'tiktok',
+    ratio: 9/16,
+    frameW: 16, frameH: 28,
+    maxWidth: 340,
+  },
+];
+
+function initRatioGrid() {
+  const el = document.getElementById('ratio-grid');
+  el.innerHTML = ASPECT_RATIOS.map((r, i) => {
+    const isActive = i === 0;
+    const icon = PLATFORM_ICONS[r.iconKey] || '';
+    return `
+      <button class="ratio-card ${isActive ? 'active' : ''}" data-ratio-id="${r.id}" onclick="selectRatio(${i})" title="${r.platform} — ${r.name}">
+        <div class="ratio-frame-wrap">
+          <div class="ratio-frame" style="width:${r.frameW}px;height:${r.frameH}px;"></div>
+        </div>
+        <span class="ratio-platform-icon">${icon}</span>
+        <div class="ratio-label">
+          <div class="ratio-name">${r.name}</div>
+          <div>${r.platform}</div>
+        </div>
+      </button>
+    `;
+  }).join('');
+}
+
+function selectRatio(i) {
+  const r = ASPECT_RATIOS[i];
+  state.aspectRatio = r;
+
+  document.querySelectorAll('.ratio-card').forEach((c, j) => {
+    c.classList.toggle('active', j === i);
+  });
+
+  const card = document.getElementById('quote-card');
+  const wrapper = document.getElementById('canvas-wrapper');
+  const canvasArea = document.getElementById('canvas-area');
+
+  // For portrait/story formats constrain by available height instead
+  const canvasH = canvasArea.clientHeight - 120; // subtract toolbar + padding
+  const canvasW = canvasArea.clientWidth - 340 - 64; // subtract sidebar + padding
+  
+  let targetMaxWidth = r.maxWidth;
+  
+  // If taller than wide (portrait), constrain by height
+  if (r.ratio < 1) {
+    const maxByHeight = Math.floor(canvasH * r.ratio);
+    targetMaxWidth = Math.min(r.maxWidth, maxByHeight);
+  }
+  
+  // Never exceed available canvas width
+  targetMaxWidth = Math.min(targetMaxWidth, canvasW);
+
+  card.style.aspectRatio = r.ratio;
+  wrapper.style.maxWidth = Math.max(targetMaxWidth, 220) + 'px';
+
+  if (isMobile() && typeof resizeMobileCanvas === 'function') resizeMobileCanvas();
+  toast(r.platform + ' · ' + r.name);
+}
+
+
+// ══════════════════════════════════════════════════════
+//  THEMES
+// ══════════════════════════════════════════════════════
+
+const THEMES = [
+  {
+    id: 'dark', label: 'Dark', cls: '',
+    bg: '#0a0a0f', surface: '#13131a', accent: '#c9a96e',
+    bars: ['#13131a','#c9a96e','#1c1c27'],
+  },
+  {
+    id: 'light', label: 'Light', cls: 'theme-light',
+    bg: '#f5f2ed', surface: '#ffffff', accent: '#b8864e',
+    bars: ['#f5f2ed','#b8864e','#e8e3da'],
+  },
+  {
+    id: 'sepia', label: 'Sepia', cls: 'theme-sepia',
+    bg: '#1c160d', surface: '#241d11', accent: '#d4943a',
+    bars: ['#1c160d','#d4943a','#2e2516'],
+  },
+  {
+    id: 'midnight', label: 'Night', cls: 'theme-midnight',
+    bg: '#050508', surface: '#0d0d14', accent: '#9b8aff',
+    bars: ['#050508','#9b8aff','#141420'],
+  },
+];
+
+let currentTheme = THEMES[0];
+
+function initThemeGrid() {
+  const el = document.getElementById('theme-grid');
+  el.innerHTML = THEMES.map((t, i) => `
+    <div class="theme-swatch ${i === 0 ? 'active' : ''}"
+         style="background:${t.bg}"
+         data-theme="${t.id}"
+         onclick="applyTheme(${i})"
+         title="${t.label}">
+      ${t.bars.map(c => `<div class="theme-swatch-bar" style="background:${c}"></div>`).join('')}
+      <span class="theme-label">${t.label}</span>
+    </div>
+  `).join('');
+}
+
+function applyTheme(i) {
+  const t = THEMES[i];
+  currentTheme = t;
+  document.documentElement.className = t.cls;
+  // Update meta theme-color so browser chrome matches
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.content = t.bg;
+  document.querySelectorAll('.theme-swatch').forEach((s, j) => {
+    s.classList.toggle('active', j === i);
+  });
+  localStorage.setItem('qc_theme', t.id);
+  toast('Theme: ' + t.label);
+}
+
+function restoreTheme() {
+  const saved = localStorage.getItem('qc_theme');
+  if (!saved) return;
+  const i = THEMES.findIndex(t => t.id === saved);
+  if (i !== -1) applyTheme(i);
+}
+
+// ══════════════════════════════════════════════════════
+//  QUOTE TEXT COLOR
+// ══════════════════════════════════════════════════════
+
+const QUOTE_COLORS = [
+  { hex: '#ffffff', label: 'White' },
+  { hex: '#f0ede8', label: 'Cream' },
+  { hex: '#c9a96e', label: 'Gold' },
+  { hex: '#f4c2c2', label: 'Blush' },
+  { hex: '#a8d8ea', label: 'Sky' },
+  { hex: '#b5ead7', label: 'Mint' },
+  { hex: '#ffd700', label: 'Yellow' },
+  { hex: '#ff9999', label: 'Coral' },
+];
+
+let quoteColor = '#ffffff';
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+}
+
+
+function initQuoteColors() {
+  const row = document.getElementById('qcolor-row');
+  row.innerHTML = QUOTE_COLORS.map((c, i) => `
+    <div class="qcolor-swatch ${i === 0 ? 'active' : ''}"
+         style="background:${c.hex}"
+         title="${c.label}"
+         onclick="setQuoteColor('${c.hex}', this)">
+    </div>
+  `).join('') + `
+    <div class="qcolor-custom" title="Custom color" style="position:relative;">
+      +
+      <input type="color" id="qcolor-custom-input" value="#ffffff"
+             onchange="setQuoteColor(this.value, null, true)">
+    </div>
+  `;
+}
+
+function setQuoteColor(hex, el, isCustom) {
+  quoteColor = hex;
+  document.querySelectorAll('.qcolor-swatch').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  applyState();
+}
+
+// ══════════════════════════════════════════════════════
+//  PRESET SYSTEM
+// ══════════════════════════════════════════════════════
+
+function getPresets() {
+  try { return JSON.parse(localStorage.getItem('qc_presets') || '[]'); }
+  catch { return []; }
+}
+
+function savePresets(list) {
+  localStorage.setItem('qc_presets', JSON.stringify(list));
+}
+
+function capturePreset(name) {
+  return {
+    id: Date.now(),
+    name: name || 'Untitled',
+    createdAt: new Date().toLocaleDateString(),
+    bg: state.bg,
+    bgType: state.bgType,
+    fontPairId: state.fontPair.id,
+    fontSize: state.fontSize,
+    fontWeight: state.fontWeight,
+    letterSpacing: state.letterSpacing,
+    italic: state.italic,
+    uppercase: state.uppercase,
+    textAlign: state.textAlign,
+    vertAlign: state.vertAlign,
+    tintColor: state.tintColor,
+    tintOpacity: state.tintOpacity,
+    watermark: state.watermark,
+    padding: state.padding,
+    quoteColor: quoteColor,
+    thumb: state.bg, // use gradient as thumb bg
+  };
+}
+
+function savePreset() {
+  const input = document.getElementById('preset-name-input');
+  const name = input.value.trim() || 'Preset ' + (getPresets().length + 1);
+  const list = getPresets();
+  list.unshift(capturePreset(name));
+  if (list.length > 12) list.pop(); // cap at 12
+  savePresets(list);
+  input.value = '';
+  renderPresetList();
+  toast('✓ Preset saved: ' + name);
+}
+
+function loadPreset(id) {
+  const list = getPresets();
+  const p = list.find(x => x.id === id);
+  if (!p) return;
+
+  state.bg = p.bg;
+  state.bgType = p.bgType || 'gradient';
+  state.fontPair = FONT_PAIRS.find(f => f.id === p.fontPairId) || FONT_PAIRS[0];
+  state.fontSize = p.fontSize;
+  state.fontWeight = p.fontWeight;
+  state.letterSpacing = p.letterSpacing;
+  state.italic = p.italic;
+  state.uppercase = p.uppercase;
+  state.textAlign = p.textAlign;
+  state.vertAlign = p.vertAlign;
+  state.tintColor = p.tintColor;
+  state.tintOpacity = p.tintOpacity;
+  state.watermark = p.watermark;
+  state.padding = p.padding;
+  quoteColor = p.quoteColor || '#ffffff';
+
+  // Sync all UI controls
+  syncControlsToState();
+  applyState();
+  toast('✓ Preset loaded: ' + p.name);
+}
+
+function deletePreset(id) {
+  const list = getPresets().filter(x => x.id !== id);
+  savePresets(list);
+  renderPresetList();
+  toast('Preset deleted');
+}
+
+function renderPresetList() {
+  const el = document.getElementById('preset-list');
+  const list = getPresets();
+  if (list.length === 0) {
+    el.innerHTML = '<div class="preset-empty">No presets yet. Design something beautiful and save it!</div>';
+    return;
+  }
+  el.innerHTML = list.map(p => `
+    <div class="preset-item" onclick="loadPreset(${p.id})">
+      <div class="preset-thumb" style="background-image:${p.bg};background-size:cover;"></div>
+      <div class="preset-info">
+        <div class="preset-name">${p.name}</div>
+        <div class="preset-meta">${p.createdAt}</div>
+      </div>
+      <button class="preset-del" onclick="event.stopPropagation();deletePreset(${p.id})" title="Delete">×</button>
+    </div>
+  `).join('');
+}
+
+function syncControlsToState() {
+  // Sliders
+  const sliders = [
+    ['font-size', 'fontSize', 'font-size-val', 'px'],
+    ['font-weight', 'fontWeight', 'font-weight-val', ''],
+    ['letter-spacing', 'letterSpacing', 'letter-spacing-val', ''],
+    ['tint-opacity', 'tintOpacity', 'tint-opacity-val', '%'],
+    ['card-padding', 'padding', 'card-padding-val', 'px'],
+  ];
+  sliders.forEach(([id, key, valId, suf]) => {
+    const el = document.getElementById(id);
+    if (el) { el.value = state[key]; document.getElementById(valId).textContent = state[key] + suf; }
+  });
+
+  // Tint color
+  document.getElementById('tint-color').value = state.tintColor;
+
+  // Watermark
+  document.getElementById('watermark-input').value = state.watermark;
+
+  // Italic / Uppercase
+  document.getElementById('btn-italic').classList.toggle('active', state.italic);
+  document.getElementById('btn-uppercase').classList.toggle('active', state.uppercase);
+
+  // Text align
+  document.querySelectorAll('[data-align]').forEach(b => b.classList.toggle('active', b.dataset.align === state.textAlign));
+  document.querySelectorAll('[data-valign]').forEach(b => b.classList.toggle('active', b.dataset.valign === state.vertAlign));
+
+  // Font pair
+  document.querySelectorAll('.font-pair-card').forEach((c, i) => c.classList.toggle('active', FONT_PAIRS[i]?.id === state.fontPair.id));
+
+  // BG swatches
+  document.querySelectorAll('.bg-swatch').forEach((s, i) => s.classList.toggle('active', BACKGROUNDS[i]?.value === state.bg));
+
+  // Quote color swatches
+  document.querySelectorAll('.qcolor-swatch').forEach(s => s.classList.toggle('active', s.style.background === quoteColor || s.style.backgroundColor === quoteColor));
+}
+
+// ══════════════════════════════════════════════════════
+//  EXPORT MODAL
+// ══════════════════════════════════════════════════════
+
+let exportFmt = 'png';
+
+function openExportModal() {
+  document.getElementById('export-modal').classList.add('open');
+}
+
+function closeExportModal() {
+  document.getElementById('export-modal').classList.remove('open');
+}
+
+function selectExportFmt(fmt, btn) {
+  exportFmt = fmt;
+  document.querySelectorAll('.export-opt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('jpg-quality-row').classList.toggle('visible', fmt === 'jpg');
+}
+
+async function runExport() {
+  closeExportModal();
+  toast('Rendering…');
+
+  if (!window.html2canvas) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  }
+
+  const card = document.getElementById('quote-card');
+  let scale = 3;
+  if (exportFmt === '2x') scale = 2;
+  if (exportFmt === '4x') scale = 4;
+
+  const canvas = await html2canvas(card, {
+    scale,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    logging: false,
+  });
+
+  const link = document.createElement('a');
+  const ts = Date.now();
+
+  if (exportFmt === 'jpg') {
+    const q = parseInt(document.getElementById('jpg-quality').value) / 100;
+    link.download = 'quotecraft-' + ts + '.jpg';
+    link.href = canvas.toDataURL('image/jpeg', q);
+  } else {
+    link.download = 'quotecraft-' + ts + '.png';
+    link.href = canvas.toDataURL('image/png');
+  }
+  link.click();
+
+  const labels = { png:'PNG 3×', jpg:'JPEG', '2x':'PNG 2×', '4x':'PNG 4×' };
+  toast('✓ Exported as ' + labels[exportFmt]);
+}
+
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+
+const QUOTES = {
+  all: [],
+  inspiration: [
+    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+    { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
+    { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+    { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+    { text: "Do not go where the path may lead, go instead where there is no path and leave a trail.", author: "Ralph Waldo Emerson" },
+    { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
+    { text: "Whether you think you can or you think you can't, you're right.", author: "Henry Ford" },
+    { text: "Creativity is intelligence having fun.", author: "Albert Einstein" },
+  ],
+  life: [
+    { text: "Life is what happens when you're busy making other plans.", author: "John Lennon" },
+    { text: "In three words I can sum up everything I've learned about life: it goes on.", author: "Robert Frost" },
+    { text: "Life is not measured by the number of breaths we take, but by the moments that take our breath away.", author: "Maya Angelou" },
+    { text: "To live is the rarest thing in the world. Most people just exist.", author: "Oscar Wilde" },
+    { text: "The purpose of life is not to be happy. It is to be useful, to be honorable, to be compassionate.", author: "Ralph Waldo Emerson" },
+    { text: "Life is short, and it is here to be lived.", author: "Kate Winslet" },
+  ],
+  wisdom: [
+    { text: "The unexamined life is not worth living.", author: "Socrates" },
+    { text: "Knowing yourself is the beginning of all wisdom.", author: "Aristotle" },
+    { text: "The only true wisdom is in knowing you know nothing.", author: "Socrates" },
+    { text: "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.", author: "Rumi" },
+    { text: "The mind is everything. What you think, you become.", author: "Buddha" },
+    { text: "In seeking wisdom, the first step is silence, the second is listening.", author: "Solomon Ibn Gabirol" },
+  ],
+  love: [
+    { text: "The best thing to hold onto in life is each other.", author: "Audrey Hepburn" },
+    { text: "Where there is love there is life.", author: "Mahatma Gandhi" },
+    { text: "To love and be loved is to feel the sun from both sides.", author: "David Viscott" },
+    { text: "Love is composed of a single soul inhabiting two bodies.", author: "Aristotle" },
+    { text: "The heart wants what it wants, or else it does not care.", author: "Emily Dickinson" },
+    { text: "Love is not about how many days, months, or years you have been together. It is about how much you love each other every single day.", author: "Unknown" },
+  ],
+  success: [
+    { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+    { text: "The secret of success is to do the common thing uncommonly well.", author: "John D. Rockefeller" },
+    { text: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau" },
+    { text: "Don't be afraid to give up the good to go for the great.", author: "John D. Rockefeller" },
+    { text: "I find that the harder I work, the more luck I seem to have.", author: "Thomas Jefferson" },
+  ],
+  art: [
+    { text: "Every artist dips his brush in his own soul, and paints his own nature into his pictures.", author: "Henry Ward Beecher" },
+    { text: "Art is not what you see, but what you make others see.", author: "Edgar Degas" },
+    { text: "The purpose of art is washing the dust of daily life off our souls.", author: "Pablo Picasso" },
+    { text: "Creativity takes courage.", author: "Henri Matisse" },
+    { text: "An artist is not paid for his labor but for his vision.", author: "James Whistler" },
+  ],
+  philosophy: [
+    { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
+    { text: "He who has a why to live can bear almost any how.", author: "Friedrich Nietzsche" },
+    { text: "The only good is knowledge and the only evil is ignorance.", author: "Socrates" },
+    { text: "One cannot step twice in the same river.", author: "Heraclitus" },
+    { text: "I think therefore I am.", author: "René Descartes" },
+  ],
+};
+
+// Flatten all
+Object.keys(QUOTES).filter(k => k !== 'all').forEach(k => {
+  QUOTES.all.push(...QUOTES[k].map(q => ({ ...q, category: k })));
+});
+
+const BACKGROUNDS = [
+  { id: 'g1', value: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' },
+  { id: 'g2', value: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)' },
+  { id: 'g3', value: 'linear-gradient(135deg, #2d1b69, #11998e, #38ef7d)' },
+  { id: 'g4', value: 'linear-gradient(135deg, #141e30, #243b55)' },
+  { id: 'g5', value: 'linear-gradient(135deg, #3d0000, #250000)' },
+  { id: 'g6', value: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' },
+  { id: 'g7', value: 'linear-gradient(135deg, #1c0e00, #3d2800, #6b4800)' },
+  { id: 'g8', value: 'linear-gradient(135deg, #000000, #434343)' },
+  { id: 'g9', value: 'linear-gradient(135deg, #0a0a0a, #1a1a1a, #2a1a0a)' },
+  { id: 'g10', value: 'linear-gradient(135deg, #004e92, #000428)' },
+  { id: 'g11', value: 'linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #6b2fa0 100%)' },
+  { id: 'g12', value: 'linear-gradient(135deg, #1a0533, #4a0533, #1a0533)' },
+];
+
+const FONT_PAIRS = [
+  {
+    id: 'fp1', name: 'Playfair + Cormorant',
+    heading: "'Playfair Display', serif", body: "'Cormorant Garamond', serif",
+    previewH: 'Playfair Display', previewB: 'Cormorant Garamond',
+  },
+  {
+    id: 'fp2', name: 'Fraunces + DM Sans',
+    heading: "'Fraunces', serif", body: "'DM Sans', sans-serif",
+    previewH: 'Fraunces', previewB: 'DM Sans',
+  },
+  {
+    id: 'fp3', name: 'DM Serif + Outfit',
+    heading: "'DM Serif Display', serif", body: "'Outfit', sans-serif",
+    previewH: 'DM Serif Display', previewB: 'Outfit',
+  },
+  {
+    id: 'fp4', name: 'Libre Baskerville + Josefin',
+    heading: "'Libre Baskerville', serif", body: "'Josefin Sans', sans-serif",
+    previewH: 'Libre Baskerville', previewB: 'Josefin Sans',
+  },
+  {
+    id: 'fp5', name: 'Crimson Pro + Outfit',
+    heading: "'Crimson Pro', serif", body: "'Outfit', sans-serif",
+    previewH: 'Crimson Pro', previewB: 'Outfit',
+  },
+];
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+
+let state = {
+  category: 'all',
+  quoteIdx: 0,
+  quote: QUOTES.all[0],
+  bg: BACKGROUNDS[0].value,
+  bgType: 'gradient',  // 'gradient' | 'image'
+  customImage: null,
+  fontPair: FONT_PAIRS[0],
+  fontSize: 30,
+  fontWeight: 400,
+  letterSpacing: 0,
+  italic: false,
+  uppercase: false,
+  textAlign: 'left',
+  vertAlign: 'center',
+  tintColor: '#000000',
+  tintOpacity: 50,
+  watermark: '@quotecraft',
+  padding: 48,
+  aspectRatio: ASPECT_RATIOS[0],
+  favorites: JSON.parse(localStorage.getItem('qc_favs') || '[]'),
+};
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+
+function applyState() {
+  const card = document.getElementById('quote-card');
+  const textEl = document.getElementById('quote-text-el');
+  const authorEl = document.getElementById('quote-author-el');
+  const watermarkEl = document.getElementById('card-watermark');
+  const tintEl = document.getElementById('color-tint-overlay');
+  const bodyWrap = document.getElementById('quote-body-wrap');
+  const content = document.getElementById('card-content');
+
+  // Background — wipe all sub-properties first so nothing bleeds through
+  card.style.removeProperty('background');
+  card.style.removeProperty('background-image');
+  card.style.removeProperty('background-size');
+  card.style.removeProperty('background-position');
+  card.style.removeProperty('background-color');
+
+  if (state.bgType === 'image' && state.customImage) {
+    card.style.backgroundImage = 'url(' + state.customImage + ')';
+    card.style.backgroundSize = 'cover';
+    card.style.backgroundPosition = 'center';
+    card.style.backgroundColor = '#000';
+  } else {
+    card.style.backgroundImage = state.bg;
+  }
+
+  // Tint
+  const hex = state.tintColor;
+  const op = state.tintOpacity / 100;
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  tintEl.style.background = `rgba(${r},${g},${b},${op})`;
+
+  // Quote text
+  textEl.textContent = state.quote.text;
+  authorEl.textContent = '— ' + state.quote.author;
+  watermarkEl.textContent = state.watermark;
+
+  // Typography
+  textEl.style.color = quoteColor || '#ffffff';
+  textEl.style.fontFamily = state.fontPair.heading;
+  textEl.style.fontSize = state.fontSize + 'px';
+  textEl.style.fontWeight = state.fontWeight;
+  textEl.style.letterSpacing = state.letterSpacing + 'px';
+  textEl.style.fontStyle = state.italic ? 'italic' : 'normal';
+  textEl.style.textTransform = state.uppercase ? 'uppercase' : 'none';
+  textEl.style.textAlign = state.textAlign;
+  authorEl.style.color = hexToRgba(quoteColor || '#ffffff', 0.65);
+  authorEl.style.fontFamily = state.fontPair.body;
+  authorEl.style.textAlign = state.textAlign;
+  watermarkEl.style.textAlign = state.textAlign;
+  card.style.padding = state.padding + 'px';
+
+  // Vertical
+  bodyWrap.style.justifyContent = state.vertAlign === 'start' ? 'flex-start' : state.vertAlign === 'end' ? 'flex-end' : 'center';
+
+  // Fav icon
+  const isFav = state.favorites.some(f => f.text === state.quote.text);
+  document.getElementById('fav-icon').textContent = isFav ? '♥' : '♡';
+  document.getElementById('btn-fav-this').classList.toggle('active', isFav);
+
+  // Fav count
+  const count = state.favorites.length;
+  document.getElementById('fav-count-badge').textContent = count > 0 ? ` (${count})` : '';
+}
+
+// ══════════════════════════════════════════════════════
+//  QUOTE ACTIONS
+// ══════════════════════════════════════════════════════
+
+function getPool() {
+  return state.category === 'all' ? QUOTES.all : (QUOTES[state.category] || QUOTES.all);
+}
+
+function shuffleQuote() {
+  const pool = getPool();
+  let next;
+  do {
+    next = Math.floor(Math.random() * pool.length);
+  } while (pool.length > 1 && pool[next].text === state.quote.text);
+
+  state.quote = pool[next];
+  state.quoteIdx = next;
+
+  // Sync inputs
+  document.getElementById('quote-input').value = state.quote.text;
+  document.getElementById('author-input').value = state.quote.author;
+
+  // Animate
+  const textEl = document.getElementById('quote-text-el');
+  const authorEl = document.getElementById('quote-author-el');
+  textEl.classList.remove('quote-enter');
+  authorEl.classList.remove('quote-enter');
+  void textEl.offsetWidth;
+  textEl.classList.add('quote-enter');
+  authorEl.classList.add('quote-enter');
+
+  applyState();
+}
+
+function setCategory(cat) {
+  state.category = cat;
+  document.querySelectorAll('.pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.cat === cat);
+  });
+  shuffleQuote();
+}
+
+function copyQuoteText() {
+  navigator.clipboard.writeText(`"${state.quote.text}" — ${state.quote.author}`);
+  toast('Quote copied to clipboard');
+}
+
+// ══════════════════════════════════════════════════════
+//  FAVORITES
+// ══════════════════════════════════════════════════════
+
+function toggleFavorite() {
+  const idx = state.favorites.findIndex(f => f.text === state.quote.text);
+  if (idx === -1) {
+    state.favorites.unshift({ ...state.quote });
+    toast('♥ Added to favorites');
+  } else {
+    state.favorites.splice(idx, 1);
+    toast('Removed from favorites');
+  }
+  localStorage.setItem('qc_favs', JSON.stringify(state.favorites));
+  renderFavList();
+  applyState();
+}
+
+function renderFavList() {
+  const el = document.getElementById('fav-list');
+  if (state.favorites.length === 0) {
+    el.innerHTML = '<div class="fav-empty">No saved quotes yet.<br>Hit the ♡ to save ones you love.</div>';
+    return;
+  }
+  el.innerHTML = state.favorites.map((f, i) => `
+    <div class="fav-item" onclick="loadFav(${i})">
+      <button class="fav-item-del" onclick="event.stopPropagation(); deleteFav(${i})">×</button>
+      <div class="fav-item-quote">"${f.text}"</div>
+      <div class="fav-item-author">— ${f.author}</div>
+    </div>
+  `).join('');
+}
+
+function loadFav(i) {
+  state.quote = state.favorites[i];
+  document.getElementById('quote-input').value = state.quote.text;
+  document.getElementById('author-input').value = state.quote.author;
+  applyState();
+  closeFavPanel();
+}
+
+function deleteFav(i) {
+  state.favorites.splice(i, 1);
+  localStorage.setItem('qc_favs', JSON.stringify(state.favorites));
+  renderFavList();
+  applyState();
+}
+
+function openFavPanel() {
+  if (isMobile()) {
+    openSheet('theme'); // theme panel has the fav list on mobile
+    // Switch to the fav sub-section
+    setTimeout(() => sheetTab('theme', document.querySelector('.sheet-tab[data-panel="theme"]')), 50);
+    return;
+  }
+  renderFavList();
+  document.getElementById('fav-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('active');
+}
+
+function closeFavPanel() {
+  document.getElementById('fav-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════════
+//  DOWNLOAD
+// ══════════════════════════════════════════════════════
+
+async function downloadCard() { return runExport(); }
+async function _downloadCard_orig() {
+  toast('Preparing export…');
+
+  // Use html2canvas via CDN
+  if (!window.html2canvas) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  }
+
+  const card = document.getElementById('quote-card');
+  const canvas = await html2canvas(card, {
+    scale: 3,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    logging: false,
+  });
+
+  const link = document.createElement('a');
+  link.download = `quotecraft-${Date.now()}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  toast('✓ Downloaded!');
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════════════════════════════════
+//  TYPOGRAPHY TOGGLES
+// ══════════════════════════════════════════════════════
+
+function toggleItalic() {
+  state.italic = !state.italic;
+  document.getElementById('btn-italic').classList.toggle('active', state.italic);
+  applyState();
+}
+
+function toggleUppercase() {
+  state.uppercase = !state.uppercase;
+  document.getElementById('btn-uppercase').classList.toggle('active', state.uppercase);
+  applyState();
+}
+
+function setTextAlign(align) {
+  state.textAlign = align;
+  document.querySelectorAll('[data-align]').forEach(b => {
+    b.classList.toggle('active', b.dataset.align === align);
+  });
+  applyState();
+}
+
+function setVertAlign(va) {
+  state.vertAlign = va;
+  document.querySelectorAll('[data-valign]').forEach(b => {
+    b.classList.toggle('active', b.dataset.valign === va);
+  });
+  applyState();
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT UI COMPONENTS
+// ══════════════════════════════════════════════════════
+
+function initCategories() {
+  const cats = ['all', 'inspiration', 'life', 'wisdom', 'love', 'success', 'art', 'philosophy'];
+  const labels = { all: 'All', inspiration: 'Inspire', life: 'Life', wisdom: 'Wisdom', love: 'Love', success: 'Success', art: 'Art', philosophy: 'Philosophy' };
+  const el = document.getElementById('category-pills');
+  el.innerHTML = cats.map(c => `
+    <button class="pill ${c === 'all' ? 'active' : ''}" data-cat="${c}" onclick="setCategory('${c}')">${labels[c]}</button>
+  `).join('');
+}
+
+function initBgSwatches() {
+  const el = document.getElementById('bg-swatches');
+  el.innerHTML = BACKGROUNDS.map((bg, i) => `
+    <div class="bg-swatch ${i === 0 ? 'active' : ''}" 
+         style="background:${bg.value}" 
+         data-bg="${i}"
+         onclick="selectBg(${i})">
+    </div>
+  `).join('');
+}
+
+function selectBg(i) {
+  state.bg = BACKGROUNDS[i].value;
+  state.bgType = 'gradient';
+  state.customImage = null;
+  document.querySelectorAll('.bg-swatch').forEach((s, j) => {
+    s.classList.toggle('active', j === i);
+  });
+  applyState();
+}
+
+function initFontPairs() {
+  const el = document.getElementById('font-pairs');
+  el.innerHTML = FONT_PAIRS.map((fp, i) => `
+    <div class="font-pair-card ${i === 0 ? 'active' : ''}" onclick="selectFontPair(${i})">
+      <div class="font-pair-name">${fp.name}</div>
+      <div class="font-pair-preview-heading" style="font-family:${fp.heading}">${fp.previewH}</div>
+      <div class="font-pair-preview-body" style="font-family:${fp.body}">${fp.previewB}</div>
+    </div>
+  `).join('');
+}
+
+function selectFontPair(i) {
+  state.fontPair = FONT_PAIRS[i];
+  document.querySelectorAll('.font-pair-card').forEach((c, j) => {
+    c.classList.toggle('active', j === i);
+  });
+  applyState();
+}
+
+// ══════════════════════════════════════════════════════
+//  EVENT LISTENERS
+// ══════════════════════════════════════════════════════
+
+document.getElementById('btn-shuffle').addEventListener('click', () => {
+  document.getElementById('btn-shuffle').classList.add('pulse');
+  setTimeout(() => document.getElementById('btn-shuffle').classList.remove('pulse'), 1200);
+  shuffleQuote();
+});
+
+document.getElementById('btn-favs').addEventListener('click', openFavPanel);
+// Export handled by openExportModal() via onclick
+
+document.getElementById('quote-input').addEventListener('input', e => {
+  state.quote = { ...state.quote, text: e.target.value };
+  applyState();
+});
+
+document.getElementById('author-input').addEventListener('input', e => {
+  state.quote = { ...state.quote, author: e.target.value };
+  applyState();
+});
+
+document.getElementById('watermark-input').addEventListener('input', e => {
+  state.watermark = e.target.value;
+  applyState();
+});
+
+// Sliders
+function bindSlider(id, stateKey, valId, suffix, cb) {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    state[stateKey] = parseFloat(el.value);
+    document.getElementById(valId).textContent = el.value + suffix;
+    if (cb) cb();
+    applyState();
+  });
+}
+
+bindSlider('font-size', 'fontSize', 'font-size-val', 'px');
+bindSlider('font-weight', 'fontWeight', 'font-weight-val', '');
+bindSlider('letter-spacing', 'letterSpacing', 'letter-spacing-val', '');
+bindSlider('tint-opacity', 'tintOpacity', 'tint-opacity-val', '%');
+bindSlider('card-padding', 'padding', 'card-padding-val', 'px');
+
+document.getElementById('jpg-quality').addEventListener('input', e => {
+  document.getElementById('jpg-quality-val').textContent = e.target.value + '%';
+});
+
+document.getElementById('tint-color').addEventListener('input', e => {
+  state.tintColor = e.target.value;
+  applyState();
+});
+
+// Image upload
+document.getElementById('img-upload-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.customImage = ev.target.result;
+    state.bgType = 'image';
+    // Deselect all bg swatches
+    document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+    applyState();
+    toast('✓ Image applied');
+  };
+  reader.readAsDataURL(file);
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); shuffleQuote(); }
+  if (e.key === 'f') toggleFavorite();
+  if (e.key === 'd') downloadCard();
+});
+
+// ══════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════
+
+function init() {
+  initThemeGrid();
+  initRatioGrid();
+  initCategories();
+  initBgSwatches();
+  initFontPairs();
+  initQuoteColors();
+  restoreTheme();
+  renderPresetList();
+
+  // Seed inputs
+  document.getElementById('quote-input').value = state.quote.text;
+  document.getElementById('author-input').value = state.quote.author;
+  document.getElementById('watermark-input').value = state.watermark;
+
+  applyState();
+
+  // Animate card in
+  setTimeout(() => {
+    document.getElementById('quote-text-el').classList.add('quote-enter');
+  }, 200);
+
+  // Mobile
+  initMobileUI();
+}
+
+init();
+
+
+// ══════════════════════════════════════════════════════
+//  MOBILE UI
+// ══════════════════════════════════════════════════════
+
+// ── Bottom sheet open/close ──────────────────────────
+let sheetOpenTab = null;
+
+function openSheet(tab) {
+  const sheet = document.getElementById('mobile-sheet');
+  sheet.style.display = 'flex';
+  sheet.style.flexDirection = 'column';
+  requestAnimationFrame(() => {
+    sheet.classList.add('open');
+  });
+  sheetOpenTab = tab;
+  sheetTab(tab, document.querySelector('.sheet-tab[data-panel="' + tab + '"]'));
+}
+
+function closeSheet() {
+  const sheet = document.getElementById('mobile-sheet');
+  sheet.classList.remove('open');
+  sheetOpenTab = null;
+  // Reset nav buttons to canvas
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.mobile-nav-btn[data-tab="canvas"]').classList.add('active');
+}
+
+// ── Bottom nav tab switch ────────────────────────────
+function mobileTab(tab, btn) {
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (tab === 'canvas') {
+    closeSheet();
+    return;
+  }
+
+  // Map nav tabs to sheet panels
+  const tabToPanel = {
+    background: 'background',
+    text:       'text',
+    layout:     'layout',
+    more:       'presets',
+  };
+  const panel = tabToPanel[tab] || tab;
+  openSheet(panel);
+}
+
+// ── Sheet tab switch ─────────────────────────────────
+function sheetTab(panelId, btn) {
+  // Deactivate all panels and tabs
+  document.querySelectorAll('.sheet-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+
+  const panel = document.getElementById('spanel-' + panelId);
+  if (panel) panel.classList.add('active');
+  if (btn)   btn.classList.add('active');
+
+  // Sync mobile controls when panel opens
+  if (panelId === 'text')       syncMobTextControls();
+  if (panelId === 'typography') syncMobTypoControls();
+  if (panelId === 'layout')     syncMobLayoutControls();
+  if (panelId === 'presets')    renderMobPresets();
+  if (panelId === 'theme')      { renderMobThemeGrid(); renderMobFavList(); }
+  if (panelId === 'background') syncMobBgControls();
+}
+
+// ── Swipe to dismiss sheet ───────────────────────────
+(function() {
+  let startY = 0, dragging = false;
+  const handle = () => document.getElementById('sheet-handle');
+
+  document.addEventListener('touchstart', e => {
+    const h = handle();
+    if (h && h.contains(e.target)) {
+      startY = e.touches[0].clientY;
+      dragging = true;
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 0) {
+      document.getElementById('mobile-sheet').style.transform = 'translateY(' + dy + 'px)';
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (!dragging) return;
+    dragging = false;
+    const dy = e.changedTouches[0].clientY - startY;
+    const sheet = document.getElementById('mobile-sheet');
+    sheet.style.transform = '';
+    if (dy > 80) closeSheet();
+  });
+})();
+
+// ── Init mobile-specific UI components ──────────────
+
+function initMobileUI() {
+  if (!isMobile()) return;
+
+  // Scale font size down for mobile screen
+  // Mobile defaults
+  if (state.fontSize >= 28) {
+    state.fontSize = 14;
+    // Sync desktop slider
+    const deskFs = document.getElementById('font-size');
+    const deskFsV = document.getElementById('font-size-val');
+    if (deskFs)  deskFs.value  = 14;
+    if (deskFsV) deskFsV.textContent = '14px';
+    // Sync mobile slider default value attr
+    const mobFs = document.getElementById('mob-font-size');
+    const mobFsV = document.getElementById('mob-font-size-val');
+    if (mobFs)  { mobFs.value = 14; }
+    if (mobFsV) { mobFsV.textContent = '14px'; }
+  }
+
+  // Card padding 24px on mobile
+  state.padding = 24;
+  const deskPad = document.getElementById('card-padding');
+  const deskPadV = document.getElementById('card-padding-val');
+  const mobPad  = document.getElementById('mob-card-padding');
+  const mobPadV = document.getElementById('mob-card-padding-val');
+  if (deskPad)  deskPad.value = 24;
+  if (deskPadV) deskPadV.textContent = '24px';
+  if (mobPad)   mobPad.value = 24;
+  if (mobPadV)  mobPadV.textContent = '24px';
+
+  // BG swatches in sheet
+  const mobBg = document.getElementById('mob-bg-swatches');
+  if (mobBg) {
+    mobBg.innerHTML = BACKGROUNDS.map((bg, i) => `
+      <div class="bg-swatch ${i === 0 ? 'active' : ''}"
+           style="background:${bg.value}"
+           data-bg="${i}"
+           onclick="selectBg(${i}); syncDesktopBgSwatches();">
+      </div>
+    `).join('');
+  }
+
+  // Ratio grid in sheet
+  const mobRatio = document.getElementById('mob-ratio-grid');
+  if (mobRatio) {
+    mobRatio.innerHTML = ASPECT_RATIOS.map((r, i) => {
+      const icon = PLATFORM_ICONS[r.iconKey] || '';
+      return `
+        <button class="ratio-card ${i === 0 ? 'active' : ''}" data-ratio-id="${r.id}" onclick="selectRatio(${i})" title="${r.platform} — ${r.name}">
+          <div class="ratio-frame-wrap">
+            <div class="ratio-frame" style="width:${r.frameW}px;height:${r.frameH}px;"></div>
+          </div>
+          <span class="ratio-platform-icon">${icon}</span>
+          <div class="ratio-label">
+            <div class="ratio-name">${r.name}</div>
+            <div>${r.platform}</div>
+          </div>
+        </button>
+      `;
+    }).join('');
+  }
+
+  // Font pairs in sheet
+  const mobFonts = document.getElementById('mob-font-pairs');
+  if (mobFonts) {
+    mobFonts.innerHTML = FONT_PAIRS.map((fp, i) => `
+      <div class="font-pair-card ${i === 0 ? 'active' : ''}" onclick="selectFontPair(${i})">
+        <div class="font-pair-name">${fp.name}</div>
+        <div class="font-pair-preview-heading" style="font-family:${fp.heading};font-size:15px">${fp.previewH}</div>
+        <div class="font-pair-preview-body" style="font-family:${fp.body}">${fp.previewB}</div>
+      </div>
+    `).join('');
+  }
+
+  // Quote colors in sheet
+  initMobQuoteColors();
+
+  // Mobile sliders
+  bindMobSlider('mob-font-size',      'fontSize',      'mob-font-size-val',      'px');
+  bindMobSlider('mob-font-weight',    'fontWeight',    'mob-font-weight-val',    '');
+  bindMobSlider('mob-letter-spacing', 'letterSpacing', 'mob-letter-spacing-val', '');
+  bindMobSlider('mob-card-padding',   'padding',       'mob-card-padding-val',   'px');
+  bindMobSlider('mob-tint-opacity',   'tintOpacity',   'mob-tint-opacity-val',   '%');
+
+  // Tint color
+  const mobTint = document.getElementById('mob-tint-color');
+  if (mobTint) mobTint.addEventListener('input', e => {
+    state.tintColor = e.target.value;
+    document.getElementById('tint-color').value = e.target.value;
+    applyState();
+  });
+
+  // Text inputs
+  const mobQI = document.getElementById('mob-quote-input');
+  const mobAI = document.getElementById('mob-author-input');
+  const mobWM = document.getElementById('mob-watermark-input');
+  if (mobQI) { mobQI.value = state.quote.text; mobQI.addEventListener('input', e => { state.quote = {...state.quote, text: e.target.value}; document.getElementById('quote-input').value = e.target.value; applyState(); }); }
+  if (mobAI) { mobAI.value = state.quote.author; mobAI.addEventListener('input', e => { state.quote = {...state.quote, author: e.target.value}; document.getElementById('author-input').value = e.target.value; applyState(); }); }
+  if (mobWM) { mobWM.value = state.watermark; mobWM.addEventListener('input', e => { state.watermark = e.target.value; document.getElementById('watermark-input').value = e.target.value; applyState(); }); }
+
+  // Size the canvas so it fits above the action bar + nav
+  resizeMobileCanvas();
+}
+
+function bindMobSlider(id, stateKey, valId, suffix) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    state[stateKey] = parseFloat(el.value);
+    document.getElementById(valId).textContent = el.value + suffix;
+    // Sync desktop slider too
+    const desk = document.getElementById(id.replace('mob-', ''));
+    if (desk) { desk.value = el.value; }
+    const deskVal = document.getElementById(valId.replace('mob-', ''));
+    if (deskVal) deskVal.textContent = el.value + suffix;
+    applyState();
+  });
+}
+
+function resizeMobileCanvas() {
+  if (!isMobile()) return;
+  const topbarH  = 52;
+  const actionH  = 52;
+  const navH     = 60;
+  const padV     = 20;
+  const available = window.innerHeight - topbarH - actionH - navH - padV * 2;
+  const wrapper = document.getElementById('canvas-wrapper');
+  const card    = document.getElementById('quote-card');
+  const ratio   = state.aspectRatio ? state.aspectRatio.ratio : 1;
+  const maxW    = window.innerWidth - 32;
+
+  let w = maxW;
+  let h = w / ratio;
+
+  if (h > available) {
+    h = available;
+    w = h * ratio;
+  }
+
+  wrapper.style.width    = Math.floor(w) + 'px';
+  wrapper.style.maxWidth = Math.floor(w) + 'px';
+  card.style.aspectRatio = ratio;
+}
+
+// ── Sync mobile controls from state ─────────────────
+function syncMobTextControls() {
+  const qi = document.getElementById('mob-quote-input');
+  const ai = document.getElementById('mob-author-input');
+  const wm = document.getElementById('mob-watermark-input');
+  if (qi) qi.value = state.quote.text;
+  if (ai) ai.value = state.quote.author;
+  if (wm) wm.value = state.watermark;
+}
+
+function syncMobTypoControls() {
+  const pairs = [
+    ['mob-font-size',      'fontSize',      'mob-font-size-val',      'px'],
+    ['mob-font-weight',    'fontWeight',    'mob-font-weight-val',    ''],
+    ['mob-letter-spacing', 'letterSpacing', 'mob-letter-spacing-val', ''],
+  ];
+  pairs.forEach(([id, key, vid, s]) => {
+    const el = document.getElementById(id);
+    const vl = document.getElementById(vid);
+    if (el) el.value = state[key];
+    if (vl) vl.textContent = state[key] + s;
+  });
+  const bi = document.getElementById('mob-btn-italic');
+  const bu = document.getElementById('mob-btn-uppercase');
+  if (bi) bi.classList.toggle('active', state.italic);
+  if (bu) bu.classList.toggle('active', state.uppercase);
+  document.querySelectorAll('.font-pair-card').forEach((c, i) =>
+    c.classList.toggle('active', FONT_PAIRS[i]?.id === state.fontPair.id)
+  );
+}
+
+function syncMobLayoutControls() {
+  const cp = document.getElementById('mob-card-padding');
+  const cv = document.getElementById('mob-card-padding-val');
+  if (cp) cp.value = state.padding;
+  if (cv) cv.textContent = state.padding + 'px';
+  document.querySelectorAll('[data-mob-align]').forEach(b =>
+    b.classList.toggle('active', b.dataset.mobAlign === state.textAlign)
+  );
+  document.querySelectorAll('[data-mob-valign]').forEach(b =>
+    b.classList.toggle('active', b.dataset.mobValign === state.vertAlign)
+  );
+}
+
+function syncMobBgControls() {
+  const mt = document.getElementById('mob-tint-opacity');
+  const mv = document.getElementById('mob-tint-opacity-val');
+  const mc = document.getElementById('mob-tint-color');
+  if (mt) mt.value = state.tintOpacity;
+  if (mv) mv.textContent = state.tintOpacity + '%';
+  if (mc) mc.value = state.tintColor;
+  // Sync bg swatch active states
+  document.querySelectorAll('#mob-bg-swatches .bg-swatch').forEach((s, i) => {
+    s.classList.toggle('active', BACKGROUNDS[i]?.value === state.bg && state.bgType === 'gradient');
+  });
+}
+
+function syncDesktopBgSwatches() {
+  document.querySelectorAll('#bg-swatches .bg-swatch').forEach((s, i) => {
+    s.classList.toggle('active', BACKGROUNDS[i]?.value === state.bg && state.bgType === 'gradient');
+  });
+}
+
+// ── Mobile quote colors ──────────────────────────────
+function initMobQuoteColors() {
+  const row = document.getElementById('mob-qcolor-row');
+  if (!row) return;
+  row.innerHTML = QUOTE_COLORS.map((c, i) => `
+    <div class="qcolor-swatch ${i === 0 ? 'active' : ''}"
+         style="background:${c.hex}"
+         title="${c.label}"
+         onclick="setQuoteColor('${c.hex}', this)">
+    </div>
+  `).join('') + `
+    <div class="qcolor-custom" title="Custom" style="position:relative;">
+      +
+      <input type="color" value="#ffffff" onchange="setQuoteColor(this.value, null, true)">
+    </div>
+  `;
+}
+
+// ── Mobile theme grid ────────────────────────────────
+function renderMobThemeGrid() {
+  const el = document.getElementById('mob-theme-grid');
+  if (!el) return;
+  el.innerHTML = THEMES.map((t, i) => `
+    <div class="theme-swatch ${currentTheme.id === t.id ? 'active' : ''}"
+         style="background:${t.bg}"
+         data-theme="${t.id}"
+         onclick="applyTheme(${i}); renderMobThemeGrid();"
+         title="${t.label}">
+      ${t.bars.map(c => '<div class="theme-swatch-bar" style="background:' + c + '"></div>').join('')}
+      <span class="theme-label">${t.label}</span>
+    </div>
+  `).join('');
+}
+
+// ── Mobile favorites list (in sheet) ────────────────
+function renderMobFavList() {
+  const el = document.getElementById('mob-fav-list');
+  if (!el) return;
+  if (state.favorites.length === 0) {
+    el.innerHTML = '<div class="fav-empty" style="padding:16px 0">No saved quotes yet.</div>';
+    return;
+  }
+  el.innerHTML = state.favorites.map((f, i) => `
+    <div class="fav-item" onclick="loadFav(${i}); closeSheet();">
+      <button class="fav-item-del" onclick="event.stopPropagation();deleteFav(${i});renderMobFavList()">×</button>
+      <div class="fav-item-quote">"${f.text}"</div>
+      <div class="fav-item-author">— ${f.author}</div>
+    </div>
+  `).join('');
+}
+
+// ── Mobile presets ───────────────────────────────────
+function renderMobPresets() {
+  const el = document.getElementById('mob-preset-list');
+  if (!el) return;
+  const list = getPresets();
+  if (list.length === 0) {
+    el.innerHTML = '<div class="preset-empty">No presets yet.</div>';
+    return;
+  }
+  el.innerHTML = list.map(p => `
+    <div class="preset-item" onclick="loadPreset(${p.id}); closeSheet();">
+      <div class="preset-thumb" style="background-image:${p.bg};background-size:cover;"></div>
+      <div class="preset-info">
+        <div class="preset-name">${p.name}</div>
+        <div class="preset-meta">${p.createdAt}</div>
+      </div>
+      <button class="preset-del" onclick="event.stopPropagation();deletePreset(${p.id});renderMobPresets()">×</button>
+    </div>
+  `).join('');
+}
+
+function saveMobPreset() {
+  const input = document.getElementById('mob-preset-name-input');
+  const name = input.value.trim() || 'Preset ' + (getPresets().length + 1);
+  const list = getPresets();
+  list.unshift(capturePreset(name));
+  if (list.length > 12) list.pop();
+  savePresets(list);
+  input.value = '';
+  renderMobPresets();
+  renderPresetList(); // sync desktop
+  toast('✓ Preset saved: ' + name);
+}
+
+// ── Patch applyState to also sync mobile fav icon ───
+const _origApplyState = applyState;
+applyState = function() {
+  _origApplyState();
+  // Sync mobile fav button
+  const isFav = state.favorites.some(f => f.text === state.quote.text);
+  const mfi = document.getElementById('mob-fav-icon');
+  const mfb = document.getElementById('mob-fav-btn');
+  if (mfi) mfi.textContent = isFav ? '♥' : '♡';
+  if (mfb) mfb.classList.toggle('active', isFav);
+  // Sync mobile text inputs when quote shuffles
+  const qi = document.getElementById('mob-quote-input');
+  const ai = document.getElementById('mob-author-input');
+  if (qi && document.activeElement !== qi) qi.value = state.quote.text;
+  if (ai && document.activeElement !== ai) ai.value = state.quote.author;
+  // Resize canvas on mobile
+  if (isMobile() && typeof resizeMobileCanvas === 'function') resizeMobileCanvas();
+};
+
+// ── Resize on orientation change ─────────────────────
+window.addEventListener('resize', () => {
+  if (isMobile()) resizeMobileCanvas();
+});
+
+
+// ══════════════════════════════════════════════════════
+//  AI MOOD GENERATOR
+// ══════════════════════════════════════════════════════
+
+const AI_MOODS = [
+  {
+    id: 'calm',
+    name: 'Calm',
+    emoji: '🌊',
+    desc: 'Peace & stillness',
+    color: '#4a9eba',
+    steps: ['Sensing your stillness…', 'Curating tranquil words…', 'Composing your quote…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)',
+      tintColor: '#0a1628', tintOpacity: 30,
+      fontPairIdx: 1,   // Fraunces + DM Sans
+      fontSize: 28, fontWeight: 300, letterSpacing: 1,
+      italic: false, uppercase: false,
+      textAlign: 'center', vertAlign: 'center',
+      quoteColor: '#a8d8ea', padding: 48,
+    },
+    quotes: [
+      { text: "Within you there is a stillness and a sanctuary to which you can retreat at any time.", author: "Hermann Hesse" },
+      { text: "Nowhere can man find a quieter or more untroubled retreat than in his own soul.", author: "Marcus Aurelius" },
+      { text: "In the midst of movement and chaos, keep stillness inside of you.", author: "Deepak Chopra" },
+      { text: "Calm mind brings inner strength and self-confidence.", author: "Dalai Lama" },
+      { text: "Be still. Stillness reveals the secrets of eternity.", author: "Lao Tzu" },
+      { text: "The quieter you become, the more you are able to hear.", author: "Rumi" },
+      { text: "Peace is not the absence of conflict, but the ability to cope with it.", author: "Unknown" },
+      { text: "Silence is not empty. It is full of answers.", author: "Unknown" },
+      { text: "Your calm mind is the ultimate weapon against your challenges.", author: "Bryant McGill" },
+      { text: "Almost everything will work again if you unplug it for a few minutes, including you.", author: "Anne Lamott" },
+      { text: "You don't need to be better than anyone else, you just need to be better than you used to be.", author: "Wayne Dyer" },
+      { text: "Nothing can disturb your peace of mind unless you allow it to.", author: "Roy T. Bennett" },
+    ],
+  },
+  {
+    id: 'fired',
+    name: 'Fired Up',
+    emoji: '🔥',
+    desc: 'Energy & ambition',
+    color: '#e05c2c',
+    steps: ['Igniting the spark…', 'Fueling your fire…', 'Unleashing your quote…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #3d0000, #8b1a00, #ff4500)',
+      tintColor: '#1a0000', tintOpacity: 45,
+      fontPairIdx: 3,   // Libre Baskerville + Josefin
+      fontSize: 30, fontWeight: 700, letterSpacing: -0.5,
+      italic: false, uppercase: false,
+      textAlign: 'left', vertAlign: 'center',
+      quoteColor: '#ffb347', padding: 44,
+    },
+    quotes: [
+      { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+      { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+      { text: "You have to be burning with an idea, or a problem, or a wrong that you want to right.", author: "Steve Jobs" },
+      { text: "Energy and persistence conquer all things.", author: "Benjamin Franklin" },
+      { text: "Hustle until your haters ask if you're hiring.", author: "Unknown" },
+      { text: "Wake up with determination. Go to bed with satisfaction.", author: "Unknown" },
+      { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+      { text: "If you're going through hell, keep going.", author: "Winston Churchill" },
+      { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
+      { text: "Passion is energy. Feel the power that comes from focusing on what excites you.", author: "Oprah Winfrey" },
+      { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+      { text: "Rise up, start fresh, see the bright opportunity in each new day.", author: "Unknown" },
+    ],
+  },
+  {
+    id: 'melancholy',
+    name: 'Melancholy',
+    emoji: '🌧',
+    desc: 'Deep & reflective',
+    color: '#6b7fa3',
+    steps: ['Touching the depths…', 'Finding beauty in sorrow…', 'Weaving your words…'],
+    visual: {
+      bg: 'linear-gradient(160deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%)',
+      tintColor: '#050510', tintOpacity: 40,
+      fontPairIdx: 0,   // Playfair + Cormorant
+      fontSize: 26, fontWeight: 400, letterSpacing: 0.5,
+      italic: true, uppercase: false,
+      textAlign: 'center', vertAlign: 'center',
+      quoteColor: '#b0b8d0', padding: 52,
+    },
+    quotes: [
+      { text: "The wound is the place where the light enters you.", author: "Rumi" },
+      { text: "Even the darkest night will end and the sun will rise.", author: "Victor Hugo" },
+      { text: "Sadness is but a wall between two gardens.", author: "Kahlil Gibran" },
+      { text: "To have felt too much is to end in feeling nothing.", author: "Dorothy Thompson" },
+      { text: "The heaviest burden is an unlived life.", author: "Patrick Kavanagh" },
+      { text: "We must be willing to let go of the life we have planned to find the life waiting for us.", author: "Joseph Campbell" },
+      { text: "There is no sun without shadow, and it is essential to know the night.", author: "Albert Camus" },
+      { text: "One must still have chaos in oneself to be able to give birth to a dancing star.", author: "Friedrich Nietzsche" },
+      { text: "Perhaps I know best why it is man alone who laughs; he alone suffers so deeply.", author: "Friedrich Nietzsche" },
+      { text: "Let your tears come. Let them water your soul.", author: "Eileen Mayhew" },
+      { text: "The soul would have no rainbow had the eyes no tears.", author: "John Vance Cheney" },
+      { text: "Deep grief sometimes is almost like a specific location, a coordinate on a map of time.", author: "Elizabeth Gilbert" },
+    ],
+  },
+  {
+    id: 'grateful',
+    name: 'Grateful',
+    emoji: '🌸',
+    desc: 'Joy & appreciation',
+    color: '#e8875a',
+    steps: ['Opening your heart…', 'Gathering gratitude…', 'Crafting your blessing…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #1c0e00, #3d2800, #6b3800)',
+      tintColor: '#100800', tintOpacity: 30,
+      fontPairIdx: 4,   // Crimson Pro + Outfit
+      fontSize: 27, fontWeight: 400, letterSpacing: 0,
+      italic: false, uppercase: false,
+      textAlign: 'center', vertAlign: 'center',
+      quoteColor: '#f4c2a0', padding: 48,
+    },
+    quotes: [
+      { text: "Gratitude turns what we have into enough.", author: "Melody Beattie" },
+      { text: "The more grateful I am, the more beauty I see.", author: "Mary Davis" },
+      { text: "Gratitude is not only the greatest of virtues, but the parent of all others.", author: "Cicero" },
+      { text: "Appreciation can make a day, even change a life.", author: "Margaret Cousins" },
+      { text: "Be thankful for what you have; you'll end up having more.", author: "Oprah Winfrey" },
+      { text: "Joy is the simplest form of gratitude.", author: "Karl Barth" },
+      { text: "The smallest act of kindness is worth more than the greatest intention.", author: "Kahlil Gibran" },
+      { text: "Enough is a feast.", author: "Buddhist Proverb" },
+      { text: "Piglet noticed that even though he had a very small heart, it could hold a rather large amount of gratitude.", author: "A.A. Milne" },
+      { text: "Not what we say about our blessings, but how we use them, is the true measure of our thanksgiving.", author: "W.T. Purkiser" },
+      { text: "When you are grateful, fear disappears and abundance appears.", author: "Tony Robbins" },
+      { text: "There is always something to be grateful for.", author: "Rhonda Byrne" },
+    ],
+  },
+  {
+    id: 'bold',
+    name: 'Bold',
+    emoji: '⚡',
+    desc: 'Power & confidence',
+    color: '#f7c948',
+    steps: ['Summoning courage…', 'Channeling power…', 'Declaring your truth…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #000000, #1a1400, #2a2000)',
+      tintColor: '#0a0800', tintOpacity: 20,
+      fontPairIdx: 3,   // Libre Baskerville + Josefin
+      fontSize: 32, fontWeight: 700, letterSpacing: -1,
+      italic: false, uppercase: true,
+      textAlign: 'left', vertAlign: 'center',
+      quoteColor: '#f7c948', padding: 40,
+    },
+    quotes: [
+      { text: "She was not born to be tamed.", author: "Unknown" },
+      { text: "If not now, when? If not me, who?", author: "Hillel the Elder" },
+      { text: "Be so good they can't ignore you.", author: "Steve Martin" },
+      { text: "Boldness has genius, power, and magic in it.", author: "Goethe" },
+      { text: "The most courageous act is still to think for yourself. Aloud.", author: "Coco Chanel" },
+      { text: "You were born to stand out.", author: "Unknown" },
+      { text: "Well-behaved women seldom make history.", author: "Laurel Thatcher Ulrich" },
+      { text: "Whatever you are, be a good one.", author: "Abraham Lincoln" },
+      { text: "Do not go where the path may lead — go where there is no path.", author: "Ralph Waldo Emerson" },
+      { text: "Be fearless in the pursuit of what sets your soul on fire.", author: "Jennifer Lee" },
+      { text: "I am not afraid of storms, for I am learning how to sail my ship.", author: "Louisa May Alcott" },
+      { text: "No one can make you feel inferior without your consent.", author: "Eleanor Roosevelt" },
+    ],
+  },
+  {
+    id: 'romantic',
+    name: 'Romantic',
+    emoji: '🌹',
+    desc: 'Love & longing',
+    color: '#c0526e',
+    steps: ['Feeling the warmth…', 'Weaving hearts together…', 'Whispering your words…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #1a0010, #3d0020, #6b0035)',
+      tintColor: '#0f0008', tintOpacity: 35,
+      fontPairIdx: 0,   // Playfair + Cormorant
+      fontSize: 26, fontWeight: 400, letterSpacing: 0.5,
+      italic: true, uppercase: false,
+      textAlign: 'center', vertAlign: 'center',
+      quoteColor: '#ffb6c8', padding: 52,
+    },
+    quotes: [
+      { text: "You are my today and all of my tomorrows.", author: "Leo Christopher" },
+      { text: "I saw that you were perfect, and so I loved you. Then I saw that you were not perfect and I loved you even more.", author: "Angelita Lim" },
+      { text: "The best thing to hold onto in life is each other.", author: "Audrey Hepburn" },
+      { text: "Whatever our souls are made of, his and mine are the same.", author: "Emily Brontë" },
+      { text: "I want all of you, forever, you and me, every day.", author: "Nicholas Sparks" },
+      { text: "To love and be loved is to feel the sun from both sides.", author: "David Viscott" },
+      { text: "Your heart and my heart are very old friends.", author: "Hafiz" },
+      { text: "In all the world, there is no heart for me like yours.", author: "Maya Angelou" },
+      { text: "I love you not only for what you are, but for what I am when I am with you.", author: "Roy Croft" },
+      { text: "Every love story is beautiful, but ours is my favorite.", author: "Unknown" },
+      { text: "You are the last thought in my mind before I drift off to sleep.", author: "Unknown" },
+      { text: "The heart wants what it wants — or else it does not care.", author: "Emily Dickinson" },
+    ],
+  },
+  {
+    id: 'wise',
+    name: 'Wise',
+    emoji: '🦉',
+    desc: 'Insight & truth',
+    color: '#8bc4a0',
+    steps: ['Consulting the ancients…', 'Distilling wisdom…', 'Revealing your truth…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #0a1a0f, #142810, #1a3a18)',
+      tintColor: '#050e06', tintOpacity: 30,
+      fontPairIdx: 2,   // DM Serif + Outfit
+      fontSize: 27, fontWeight: 400, letterSpacing: 0.3,
+      italic: false, uppercase: false,
+      textAlign: 'left', vertAlign: 'center',
+      quoteColor: '#b5ead7', padding: 48,
+    },
+    quotes: [
+      { text: "The unexamined life is not worth living.", author: "Socrates" },
+      { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
+      { text: "Knowing yourself is the beginning of all wisdom.", author: "Aristotle" },
+      { text: "The only true wisdom is in knowing you know nothing.", author: "Socrates" },
+      { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
+      { text: "It is not length of life, but depth of life.", author: "Ralph Waldo Emerson" },
+      { text: "The mind is everything. What you think, you become.", author: "Buddha" },
+      { text: "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.", author: "Rumi" },
+      { text: "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.", author: "Albert Einstein" },
+      { text: "Life is not a problem to be solved, but a reality to be experienced.", author: "Søren Kierkegaard" },
+      { text: "He who has a why to live can bear almost any how.", author: "Friedrich Nietzsche" },
+      { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
+    ],
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    emoji: '🎨',
+    desc: 'Imagination & art',
+    color: '#b088f9',
+    steps: ['Opening the imagination…', 'Mixing colors of thought…', 'Painting your words…'],
+    visual: {
+      bg: 'linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #6b2fa0 100%)',
+      tintColor: '#08061a', tintOpacity: 30,
+      fontPairIdx: 1,   // Fraunces + DM Sans
+      fontSize: 28, fontWeight: 300, letterSpacing: 0.5,
+      italic: false, uppercase: false,
+      textAlign: 'left', vertAlign: 'center',
+      quoteColor: '#d4b0ff', padding: 48,
+    },
+    quotes: [
+      { text: "Creativity is intelligence having fun.", author: "Albert Einstein" },
+      { text: "Every artist dips his brush in his own soul.", author: "Henry Ward Beecher" },
+      { text: "The purpose of art is washing the dust of daily life off our souls.", author: "Pablo Picasso" },
+      { text: "Creativity takes courage.", author: "Henri Matisse" },
+      { text: "Art is not what you see, but what you make others see.", author: "Edgar Degas" },
+      { text: "Imagination is the beginning of creation.", author: "George Bernard Shaw" },
+      { text: "You can't use up creativity. The more you use, the more you have.", author: "Maya Angelou" },
+      { text: "Logic will get you from A to B. Imagination will take you everywhere.", author: "Albert Einstein" },
+      { text: "The worst enemy to creativity is self-doubt.", author: "Sylvia Plath" },
+      { text: "An idea that is not dangerous is unworthy of being called an idea at all.", author: "Oscar Wilde" },
+      { text: "Make something people want. Make something you love. They're often the same thing.", author: "Unknown" },
+      { text: "Every block of stone has a statue inside it and it is the task of the sculptor to discover it.", author: "Michelangelo" },
+    ],
+  },
+];
+
+// ── Modal state ──────────────────────────────────────
+let selectedMoodIdx = null;
+let aiUsed = false;
+
+// ── Open / Close ─────────────────────────────────────
+function openAiModal() {
+  // Lazy-init the grid the first time the modal opens
+  // (the modal HTML lives after the script block, so DOM isn't ready at init time)
+  const grid = document.getElementById('ai-mood-grid');
+  if (grid && grid.children.length === 0) initAiMoodGrid();
+
+  selectedMoodIdx = null;
+  document.getElementById('ai-gen-btn').disabled = true;
+  document.getElementById('ai-mood-picker').classList.remove('hidden');
+  document.getElementById('ai-generating').classList.remove('visible');
+  document.querySelectorAll('.mood-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('ai-modal').classList.add('open');
+}
+
+function closeAiModal() {
+  document.getElementById('ai-modal').classList.remove('open');
+}
+
+// ── Init mood grid ───────────────────────────────────
+function initAiMoodGrid() {
+  const grid = document.getElementById('ai-mood-grid');
+  if (!grid) return;
+  grid.innerHTML = AI_MOODS.map((m, i) => `
+    <button class="mood-card" data-mood="${i}" onclick="selectMood(${i})">
+      <div class="mood-emoji">${m.emoji}</div>
+      <div class="mood-name">${m.name}</div>
+      <div class="mood-desc">${m.desc}</div>
+    </button>
+  `).join('');
+}
+
+function selectMood(i) {
+  selectedMoodIdx = i;
+  document.querySelectorAll('.mood-card').forEach((c, j) => {
+    c.classList.toggle('selected', j === i);
+  });
+  document.getElementById('ai-gen-btn').disabled = false;
+}
+
+// ── Run generation ───────────────────────────────────
+function runAiGenerate() {
+  if (selectedMoodIdx === null) return;
+  const mood = AI_MOODS[selectedMoodIdx];
+
+  // Switch to generating screen
+  document.getElementById('ai-mood-picker').classList.add('hidden');
+  const genDiv = document.getElementById('ai-generating');
+  genDiv.classList.add('visible');
+
+  // Build step messages
+  const steps = document.getElementById('ai-gen-steps');
+  steps.innerHTML = mood.steps.map((s, i) => `
+    <div class="ai-gen-step" id="ai-step-${i}">${s}</div>
+  `).join('');
+
+  // Animate steps sequentially
+  const totalMs = 2400;
+  const stepDelay = totalMs / mood.steps.length;
+
+  mood.steps.forEach((_, i) => {
+    setTimeout(() => {
+      // Mark previous as done
+      if (i > 0) {
+        document.getElementById('ai-step-' + (i-1)).classList.add('done');
+        document.getElementById('ai-step-' + (i-1)).classList.remove('visible');
+      }
+      const el = document.getElementById('ai-step-' + i);
+      if (el) el.classList.add('visible');
+    }, i * stepDelay);
+  });
+
+  // After animation — apply everything and close
+  setTimeout(() => {
+    applyMoodQuote(mood);
+    closeAiModal();
+    // Show ai badge on card
+    aiUsed = true;
+    const badge = document.getElementById('ai-badge');
+    if (badge) {
+      badge.classList.add('show');
+      setTimeout(() => badge.classList.remove('show'), 3500);
+    }
+    toast(mood.emoji + ' ' + mood.name + ' quote generated');
+  }, totalMs + 400);
+}
+
+// ── Apply mood visual + random quote ─────────────────
+function applyMoodQuote(mood) {
+  const v = mood.visual;
+
+  // Pick a random quote from this mood
+  const pool = mood.quotes;
+  const q = pool[Math.floor(Math.random() * pool.length)];
+
+  // Update state
+  state.quote = { text: q.text, author: q.author };
+  state.bg = v.bg;
+  state.bgType = 'gradient';
+  state.customImage = null;
+  state.fontPair = FONT_PAIRS[v.fontPairIdx];
+  state.fontSize = v.fontSize;
+  state.fontWeight = v.fontWeight;
+  state.letterSpacing = v.letterSpacing;
+  state.italic = v.italic;
+  state.uppercase = v.uppercase;
+  state.textAlign = v.textAlign;
+  state.vertAlign = v.vertAlign;
+  state.tintColor = v.tintColor;
+  state.tintOpacity = v.tintOpacity;
+  state.padding = v.padding;
+  quoteColor = v.quoteColor;
+
+  // Sync all UI controls
+  syncControlsToState();
+
+  // Sync text inputs
+  document.getElementById('quote-input').value = q.text;
+  document.getElementById('author-input').value = q.author;
+  if (isMobile()) {
+    const mqi = document.getElementById('mob-quote-input');
+    const mai = document.getElementById('mob-author-input');
+    if (mqi) mqi.value = q.text;
+    if (mai) mai.value = q.author;
+  }
+
+  // Sync bg swatch visual state
+  document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+
+  // Animate the quote text
+  const textEl = document.getElementById('quote-text-el');
+  const authorEl = document.getElementById('quote-author-el');
+  textEl.classList.remove('quote-enter');
+  authorEl.classList.remove('quote-enter');
+  void textEl.offsetWidth;
+  textEl.classList.add('quote-enter');
+  authorEl.classList.add('quote-enter');
+
+  // Also sync quote colors UI
+  document.querySelectorAll('.qcolor-swatch').forEach(s => {
+    const bg = s.style.backgroundColor || s.style.background;
+    s.classList.toggle('active', bg === quoteColor);
+  });
+
+  applyState();
+}
+
+// ── Keyboard close ───────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeAiModal();
+});
+
+// ══════════════════════════════════════════════════════
+//  PWA SERVICE WORKER (inline)
+// ══════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'quotecraft-v1';
+    const ASSETS = [
+      'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=DM+Sans:wght@300;400;500&display=swap'
+    ];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {})));
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        }))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
