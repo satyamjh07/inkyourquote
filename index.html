@@ -6,11 +6,12 @@
 <meta name="theme-color" content="#0a0a0f">
 <meta name="description" content="QuoteCraft — Create beautiful, shareable quote cards">
 <title>QuoteCraft</title>
-<link rel="manifest" href="data:application/json,{}">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Serif+Display:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Josefin+Sans:wght@100;300;400;700&family=DM+Sans:wght@300;400;500&family=Outfit:wght@200;300;400;500&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" type="image/png" href="images/2.png">
 </head>
 <body>
 
@@ -460,4 +461,11 @@
 </div>
 <script src="script.js"> </script>
 </body>
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(() => console.log("PWA Ready"))
+    .catch(err => console.log(err));
+}
+</script>
 </html>
