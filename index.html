@@ -1327,6 +1327,297 @@ html.theme-midnight {
   transition: var(--ui-transition), box-shadow 0.3s;
 }
 
+/* ════════════ AI MOOD GENERATOR ════════════ */
+
+/* Topbar AI button spark effect */
+.btn-ai {
+  position: relative;
+}
+.btn-ai:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── AI Modal backdrop ── */
+#ai-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s;
+}
+#ai-modal.open { opacity: 1; pointer-events: all; }
+
+#ai-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(18px);
+}
+
+/* ── Modal box ── */
+#ai-modal-box {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 36px 32px 32px;
+  box-shadow: 0 48px 96px rgba(0,0,0,0.6);
+  transform: translateY(20px) scale(0.96);
+  transition: transform 0.35s cubic-bezier(0.23,1,0.32,1);
+}
+#ai-modal.open #ai-modal-box { transform: translateY(0) scale(1); }
+
+/* ── Header ── */
+.ai-modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.ai-modal-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), #9b59b6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.ai-modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.15;
+}
+.ai-modal-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* ── Mood grid ── */
+.ai-mood-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 24px 0 28px;
+}
+
+.mood-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px 14px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
+  position: relative;
+  overflow: hidden;
+}
+.mood-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 14px;
+}
+.mood-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+}
+.mood-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201,169,110,0.2);
+}
+
+.mood-emoji {
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+}
+.mood-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.mood-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ── Generate button ── */
+.ai-generate-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent) 0%, #c47fd0 100%);
+  color: #0a0a0f;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.ai-generate-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ai-generate-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(201,169,110,0.35);
+}
+.ai-generate-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.ai-generate-btn:hover::after { opacity: 1; }
+
+/* ── Generating screen (step 2) ── */
+#ai-generating {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0 8px;
+  gap: 20px;
+}
+#ai-generating.visible { display: flex; }
+#ai-mood-picker { display: block; }
+#ai-mood-picker.hidden { display: none; }
+
+.ai-gen-orb {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent), #9b59b6, var(--accent));
+  animation: orb-spin 1.2s linear infinite;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ai-gen-orb::before {
+  content: '✦';
+  position: absolute;
+  font-size: 28px;
+  color: white;
+  animation: orb-pulse 1.2s ease-in-out infinite;
+}
+.ai-gen-orb::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+@keyframes orb-spin  { to { transform: rotate(360deg); } }
+@keyframes orb-pulse { 0%,100%{opacity:0.6;transform:scale(0.9)} 50%{opacity:1;transform:scale(1.1)} }
+
+.ai-gen-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 60px;
+}
+.ai-gen-step {
+  font-size: 13px;
+  color: var(--text-muted);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: all 0.4s;
+  text-align: center;
+}
+.ai-gen-step.visible {
+  opacity: 1;
+  transform: translateY(0);
+  color: var(--text);
+}
+.ai-gen-step.done {
+  opacity: 0.4;
+  color: var(--text-muted);
+}
+
+/* ── Typewriter cursor ── */
+.ai-typewriter::after {
+  content: '|';
+  animation: blink 0.8s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── AI badge on card ── */
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(201,169,110,0.12);
+  border: 1px solid rgba(201,169,110,0.25);
+  border-radius: 100px;
+  padding: 3px 8px;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
+}
+.ai-badge.show { opacity: 1; transform: scale(1); }
+
+@media (max-width: 768px) {
+  #ai-modal-box { padding: 28px 20px 24px; }
+  .ai-mood-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .mood-card { padding: 12px 6px 10px; }
+  .mood-emoji { font-size: 22px; }
+  .mood-name { font-size: 10px; }
+  .mood-desc { display: none; }
+
+  #ai-modal { align-items: flex-end; }
+  #ai-modal-box {
+    border-radius: 24px 24px 0 0;
+    max-width: 100%;
+    width: 100%;
+    transform: translateY(100%);
+    max-height: 85dvh;
+  }
+  #ai-modal.open #ai-modal-box { transform: translateY(0); }
+}
+
 </style>
 </head>
 <body>
@@ -1337,6 +1628,9 @@ html.theme-midnight {
   <div id="topbar">
     <div class="logo">Quote<span>Craft</span></div>
     <div class="topbar-divider"></div>
+    <button class="topbar-btn btn-ai" id="btn-ai" onclick="openAiModal()">
+      <span>✦</span><span class="btn-label"> AI Mood</span>
+    </button>
     <button class="topbar-btn" id="btn-shuffle">
       <span>⟳</span><span class="btn-label"> Random</span>
     </button>
@@ -1497,6 +1791,7 @@ html.theme-midnight {
         <div class="card-overlay card-vignette"></div>
         <div class="card-overlay" id="color-tint-overlay"></div>
 
+        <div class="ai-badge" id="ai-badge">✦ AI Generated</div>
         <div id="card-content">
           <div class="quote-mark">"</div>
           <div class="quote-body-wrap" id="quote-body-wrap">
@@ -1542,6 +1837,10 @@ html.theme-midnight {
   <button class="mobile-nav-btn" data-tab="layout" onclick="mobileTab('layout', this)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     <span>Layout</span>
+  </button>
+  <button class="mobile-nav-btn" data-tab="ai" onclick="openAiModal()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+    <span>AI</span>
   </button>
   <button class="mobile-nav-btn" data-tab="more" onclick="mobileTab('more', this)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>
@@ -3190,6 +3489,418 @@ window.addEventListener('resize', () => {
   if (isMobile()) resizeMobileCanvas();
 });
 
+
+// ══════════════════════════════════════════════════════
+//  AI MOOD GENERATOR
+// ══════════════════════════════════════════════════════
+
+const AI_MOODS = [
+  {
+    id: 'calm',
+    name: 'Calm',
+    emoji: '🌊',
+    desc: 'Peace & stillness',
+    color: '#4a9eba',
+    steps: ['Sensing your stillness…', 'Curating tranquil words…', 'Composing your quote…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)',
+      tintColor: '#0a1628', tintOpacity: 30,
+      fontPairIdx: 1,   // Fraunces + DM Sans
+      fontSize: 28, fontWeight: 300, letterSpacing: 1,
+      italic: false, uppercase: false,
+      textAlign: 'center', vertAlign: 'center',
+      quoteColor: '#a8d8ea', padding: 48,
+    },
+    quotes: [
+      { text: "Within you there is a stillness and a sanctuary to which you can retreat at any time.", author: "Hermann Hesse" },
+      { text: "Nowhere can man find a quieter or more untroubled retreat than in his own soul.", author: "Marcus Aurelius" },
+      { text: "In the midst of movement and chaos, keep stillness inside of you.", author: "Deepak Chopra" },
+      { text: "Calm mind brings inner strength and self-confidence.", author: "Dalai Lama" },
+      { text: "Be still. Stillness reveals the secrets of eternity.", author: "Lao Tzu" },
+      { text: "The quieter you become, the more you are able to hear.", author: "Rumi" },
+      { text: "Peace is not the absence of conflict, but the ability to cope with it.", author: "Unknown" },
+      { text: "Silence is not empty. It is full of answers.", author: "Unknown" },
+      { text: "Your calm mind is the ultimate weapon against your challenges.", author: "Bryant McGill" },
+      { text: "Almost everything will work again if you unplug it for a few minutes, including you.", author: "Anne Lamott" },
+      { text: "You don't need to be better than anyone else, you just need to be better than you used to be.", author: "Wayne Dyer" },
+      { text: "Nothing can disturb your peace of mind unless you allow it to.", author: "Roy T. Bennett" },
+    ],
+  },
+  {
+    id: 'fired',
+    name: 'Fired Up',
+    emoji: '🔥',
+    desc: 'Energy & ambition',
+    color: '#e05c2c',
+    steps: ['Igniting the spark…', 'Fueling your fire…', 'Unleashing your quote…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #3d0000, #8b1a00, #ff4500)',
+      tintColor: '#1a0000', tintOpacity: 45,
+      fontPairIdx: 3,   // Libre Baskerville + Josefin
+      fontSize: 30, fontWeight: 700, letterSpacing: -0.5,
+      italic: false, uppercase: false,
+      textAlign: 'left', vertAlign: 'center',
+      quoteColor: '#ffb347', padding: 44,
+    },
+    quotes: [
+      { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+      { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+      { text: "You have to be burning with an idea, or a problem, or a wrong that you want to right.", author: "Steve Jobs" },
+      { text: "Energy and persistence conquer all things.", author: "Benjamin Franklin" },
+      { text: "Hustle until your haters ask if you're hiring.", author: "Unknown" },
+      { text: "Wake up with determination. Go to bed with satisfaction.", author: "Unknown" },
+      { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+      { text: "If you're going through hell, keep going.", author: "Winston Churchill" },
+      { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
+      { text: "Passion is energy. Feel the power that comes from focusing on what excites you.", author: "Oprah Winfrey" },
+      { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+      { text: "Rise up, start fresh, see the bright opportunity in each new day.", author: "Unknown" },
+    ],
+  },
+  {
+    id: 'melancholy',
+    name: 'Melancholy',
+    emoji: '🌧',
+    desc: 'Deep & reflective',
+    color: '#6b7fa3',
+    steps: ['Touching the depths…', 'Finding beauty in sorrow…', 'Weaving your words…'],
+    visual: {
+      bg: 'linear-gradient(160deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%)',
+      tintColor: '#050510', tintOpacity: 40,
+      fontPairIdx: 0,   // Playfair + Cormorant
+      fontSize: 26, fontWeight: 400, letterSpacing: 0.5,
+      italic: true, uppercase: false,
+      textAlign: 'center', vertAlign: 'center',
+      quoteColor: '#b0b8d0', padding: 52,
+    },
+    quotes: [
+      { text: "The wound is the place where the light enters you.", author: "Rumi" },
+      { text: "Even the darkest night will end and the sun will rise.", author: "Victor Hugo" },
+      { text: "Sadness is but a wall between two gardens.", author: "Kahlil Gibran" },
+      { text: "To have felt too much is to end in feeling nothing.", author: "Dorothy Thompson" },
+      { text: "The heaviest burden is an unlived life.", author: "Patrick Kavanagh" },
+      { text: "We must be willing to let go of the life we have planned to find the life waiting for us.", author: "Joseph Campbell" },
+      { text: "There is no sun without shadow, and it is essential to know the night.", author: "Albert Camus" },
+      { text: "One must still have chaos in oneself to be able to give birth to a dancing star.", author: "Friedrich Nietzsche" },
+      { text: "Perhaps I know best why it is man alone who laughs; he alone suffers so deeply.", author: "Friedrich Nietzsche" },
+      { text: "Let your tears come. Let them water your soul.", author: "Eileen Mayhew" },
+      { text: "The soul would have no rainbow had the eyes no tears.", author: "John Vance Cheney" },
+      { text: "Deep grief sometimes is almost like a specific location, a coordinate on a map of time.", author: "Elizabeth Gilbert" },
+    ],
+  },
+  {
+    id: 'grateful',
+    name: 'Grateful',
+    emoji: '🌸',
+    desc: 'Joy & appreciation',
+    color: '#e8875a',
+    steps: ['Opening your heart…', 'Gathering gratitude…', 'Crafting your blessing…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #1c0e00, #3d2800, #6b3800)',
+      tintColor: '#100800', tintOpacity: 30,
+      fontPairIdx: 4,   // Crimson Pro + Outfit
+      fontSize: 27, fontWeight: 400, letterSpacing: 0,
+      italic: false, uppercase: false,
+      textAlign: 'center', vertAlign: 'center',
+      quoteColor: '#f4c2a0', padding: 48,
+    },
+    quotes: [
+      { text: "Gratitude turns what we have into enough.", author: "Melody Beattie" },
+      { text: "The more grateful I am, the more beauty I see.", author: "Mary Davis" },
+      { text: "Gratitude is not only the greatest of virtues, but the parent of all others.", author: "Cicero" },
+      { text: "Appreciation can make a day, even change a life.", author: "Margaret Cousins" },
+      { text: "Be thankful for what you have; you'll end up having more.", author: "Oprah Winfrey" },
+      { text: "Joy is the simplest form of gratitude.", author: "Karl Barth" },
+      { text: "The smallest act of kindness is worth more than the greatest intention.", author: "Kahlil Gibran" },
+      { text: "Enough is a feast.", author: "Buddhist Proverb" },
+      { text: "Piglet noticed that even though he had a very small heart, it could hold a rather large amount of gratitude.", author: "A.A. Milne" },
+      { text: "Not what we say about our blessings, but how we use them, is the true measure of our thanksgiving.", author: "W.T. Purkiser" },
+      { text: "When you are grateful, fear disappears and abundance appears.", author: "Tony Robbins" },
+      { text: "There is always something to be grateful for.", author: "Rhonda Byrne" },
+    ],
+  },
+  {
+    id: 'bold',
+    name: 'Bold',
+    emoji: '⚡',
+    desc: 'Power & confidence',
+    color: '#f7c948',
+    steps: ['Summoning courage…', 'Channeling power…', 'Declaring your truth…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #000000, #1a1400, #2a2000)',
+      tintColor: '#0a0800', tintOpacity: 20,
+      fontPairIdx: 3,   // Libre Baskerville + Josefin
+      fontSize: 32, fontWeight: 700, letterSpacing: -1,
+      italic: false, uppercase: true,
+      textAlign: 'left', vertAlign: 'center',
+      quoteColor: '#f7c948', padding: 40,
+    },
+    quotes: [
+      { text: "She was not born to be tamed.", author: "Unknown" },
+      { text: "If not now, when? If not me, who?", author: "Hillel the Elder" },
+      { text: "Be so good they can't ignore you.", author: "Steve Martin" },
+      { text: "Boldness has genius, power, and magic in it.", author: "Goethe" },
+      { text: "The most courageous act is still to think for yourself. Aloud.", author: "Coco Chanel" },
+      { text: "You were born to stand out.", author: "Unknown" },
+      { text: "Well-behaved women seldom make history.", author: "Laurel Thatcher Ulrich" },
+      { text: "Whatever you are, be a good one.", author: "Abraham Lincoln" },
+      { text: "Do not go where the path may lead — go where there is no path.", author: "Ralph Waldo Emerson" },
+      { text: "Be fearless in the pursuit of what sets your soul on fire.", author: "Jennifer Lee" },
+      { text: "I am not afraid of storms, for I am learning how to sail my ship.", author: "Louisa May Alcott" },
+      { text: "No one can make you feel inferior without your consent.", author: "Eleanor Roosevelt" },
+    ],
+  },
+  {
+    id: 'romantic',
+    name: 'Romantic',
+    emoji: '🌹',
+    desc: 'Love & longing',
+    color: '#c0526e',
+    steps: ['Feeling the warmth…', 'Weaving hearts together…', 'Whispering your words…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #1a0010, #3d0020, #6b0035)',
+      tintColor: '#0f0008', tintOpacity: 35,
+      fontPairIdx: 0,   // Playfair + Cormorant
+      fontSize: 26, fontWeight: 400, letterSpacing: 0.5,
+      italic: true, uppercase: false,
+      textAlign: 'center', vertAlign: 'center',
+      quoteColor: '#ffb6c8', padding: 52,
+    },
+    quotes: [
+      { text: "You are my today and all of my tomorrows.", author: "Leo Christopher" },
+      { text: "I saw that you were perfect, and so I loved you. Then I saw that you were not perfect and I loved you even more.", author: "Angelita Lim" },
+      { text: "The best thing to hold onto in life is each other.", author: "Audrey Hepburn" },
+      { text: "Whatever our souls are made of, his and mine are the same.", author: "Emily Brontë" },
+      { text: "I want all of you, forever, you and me, every day.", author: "Nicholas Sparks" },
+      { text: "To love and be loved is to feel the sun from both sides.", author: "David Viscott" },
+      { text: "Your heart and my heart are very old friends.", author: "Hafiz" },
+      { text: "In all the world, there is no heart for me like yours.", author: "Maya Angelou" },
+      { text: "I love you not only for what you are, but for what I am when I am with you.", author: "Roy Croft" },
+      { text: "Every love story is beautiful, but ours is my favorite.", author: "Unknown" },
+      { text: "You are the last thought in my mind before I drift off to sleep.", author: "Unknown" },
+      { text: "The heart wants what it wants — or else it does not care.", author: "Emily Dickinson" },
+    ],
+  },
+  {
+    id: 'wise',
+    name: 'Wise',
+    emoji: '🦉',
+    desc: 'Insight & truth',
+    color: '#8bc4a0',
+    steps: ['Consulting the ancients…', 'Distilling wisdom…', 'Revealing your truth…'],
+    visual: {
+      bg: 'linear-gradient(135deg, #0a1a0f, #142810, #1a3a18)',
+      tintColor: '#050e06', tintOpacity: 30,
+      fontPairIdx: 2,   // DM Serif + Outfit
+      fontSize: 27, fontWeight: 400, letterSpacing: 0.3,
+      italic: false, uppercase: false,
+      textAlign: 'left', vertAlign: 'center',
+      quoteColor: '#b5ead7', padding: 48,
+    },
+    quotes: [
+      { text: "The unexamined life is not worth living.", author: "Socrates" },
+      { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
+      { text: "Knowing yourself is the beginning of all wisdom.", author: "Aristotle" },
+      { text: "The only true wisdom is in knowing you know nothing.", author: "Socrates" },
+      { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
+      { text: "It is not length of life, but depth of life.", author: "Ralph Waldo Emerson" },
+      { text: "The mind is everything. What you think, you become.", author: "Buddha" },
+      { text: "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.", author: "Rumi" },
+      { text: "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.", author: "Albert Einstein" },
+      { text: "Life is not a problem to be solved, but a reality to be experienced.", author: "Søren Kierkegaard" },
+      { text: "He who has a why to live can bear almost any how.", author: "Friedrich Nietzsche" },
+      { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
+    ],
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    emoji: '🎨',
+    desc: 'Imagination & art',
+    color: '#b088f9',
+    steps: ['Opening the imagination…', 'Mixing colors of thought…', 'Painting your words…'],
+    visual: {
+      bg: 'linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #6b2fa0 100%)',
+      tintColor: '#08061a', tintOpacity: 30,
+      fontPairIdx: 1,   // Fraunces + DM Sans
+      fontSize: 28, fontWeight: 300, letterSpacing: 0.5,
+      italic: false, uppercase: false,
+      textAlign: 'left', vertAlign: 'center',
+      quoteColor: '#d4b0ff', padding: 48,
+    },
+    quotes: [
+      { text: "Creativity is intelligence having fun.", author: "Albert Einstein" },
+      { text: "Every artist dips his brush in his own soul.", author: "Henry Ward Beecher" },
+      { text: "The purpose of art is washing the dust of daily life off our souls.", author: "Pablo Picasso" },
+      { text: "Creativity takes courage.", author: "Henri Matisse" },
+      { text: "Art is not what you see, but what you make others see.", author: "Edgar Degas" },
+      { text: "Imagination is the beginning of creation.", author: "George Bernard Shaw" },
+      { text: "You can't use up creativity. The more you use, the more you have.", author: "Maya Angelou" },
+      { text: "Logic will get you from A to B. Imagination will take you everywhere.", author: "Albert Einstein" },
+      { text: "The worst enemy to creativity is self-doubt.", author: "Sylvia Plath" },
+      { text: "An idea that is not dangerous is unworthy of being called an idea at all.", author: "Oscar Wilde" },
+      { text: "Make something people want. Make something you love. They're often the same thing.", author: "Unknown" },
+      { text: "Every block of stone has a statue inside it and it is the task of the sculptor to discover it.", author: "Michelangelo" },
+    ],
+  },
+];
+
+// ── Modal state ──────────────────────────────────────
+let selectedMoodIdx = null;
+let aiUsed = false;
+
+// ── Open / Close ─────────────────────────────────────
+function openAiModal() {
+  // Lazy-init the grid the first time the modal opens
+  // (the modal HTML lives after the script block, so DOM isn't ready at init time)
+  const grid = document.getElementById('ai-mood-grid');
+  if (grid && grid.children.length === 0) initAiMoodGrid();
+
+  selectedMoodIdx = null;
+  document.getElementById('ai-gen-btn').disabled = true;
+  document.getElementById('ai-mood-picker').classList.remove('hidden');
+  document.getElementById('ai-generating').classList.remove('visible');
+  document.querySelectorAll('.mood-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('ai-modal').classList.add('open');
+}
+
+function closeAiModal() {
+  document.getElementById('ai-modal').classList.remove('open');
+}
+
+// ── Init mood grid ───────────────────────────────────
+function initAiMoodGrid() {
+  const grid = document.getElementById('ai-mood-grid');
+  if (!grid) return;
+  grid.innerHTML = AI_MOODS.map((m, i) => `
+    <button class="mood-card" data-mood="${i}" onclick="selectMood(${i})">
+      <div class="mood-emoji">${m.emoji}</div>
+      <div class="mood-name">${m.name}</div>
+      <div class="mood-desc">${m.desc}</div>
+    </button>
+  `).join('');
+}
+
+function selectMood(i) {
+  selectedMoodIdx = i;
+  document.querySelectorAll('.mood-card').forEach((c, j) => {
+    c.classList.toggle('selected', j === i);
+  });
+  document.getElementById('ai-gen-btn').disabled = false;
+}
+
+// ── Run generation ───────────────────────────────────
+function runAiGenerate() {
+  if (selectedMoodIdx === null) return;
+  const mood = AI_MOODS[selectedMoodIdx];
+
+  // Switch to generating screen
+  document.getElementById('ai-mood-picker').classList.add('hidden');
+  const genDiv = document.getElementById('ai-generating');
+  genDiv.classList.add('visible');
+
+  // Build step messages
+  const steps = document.getElementById('ai-gen-steps');
+  steps.innerHTML = mood.steps.map((s, i) => `
+    <div class="ai-gen-step" id="ai-step-${i}">${s}</div>
+  `).join('');
+
+  // Animate steps sequentially
+  const totalMs = 2400;
+  const stepDelay = totalMs / mood.steps.length;
+
+  mood.steps.forEach((_, i) => {
+    setTimeout(() => {
+      // Mark previous as done
+      if (i > 0) {
+        document.getElementById('ai-step-' + (i-1)).classList.add('done');
+        document.getElementById('ai-step-' + (i-1)).classList.remove('visible');
+      }
+      const el = document.getElementById('ai-step-' + i);
+      if (el) el.classList.add('visible');
+    }, i * stepDelay);
+  });
+
+  // After animation — apply everything and close
+  setTimeout(() => {
+    applyMoodQuote(mood);
+    closeAiModal();
+    // Show ai badge on card
+    aiUsed = true;
+    const badge = document.getElementById('ai-badge');
+    if (badge) {
+      badge.classList.add('show');
+      setTimeout(() => badge.classList.remove('show'), 3500);
+    }
+    toast(mood.emoji + ' ' + mood.name + ' quote generated');
+  }, totalMs + 400);
+}
+
+// ── Apply mood visual + random quote ─────────────────
+function applyMoodQuote(mood) {
+  const v = mood.visual;
+
+  // Pick a random quote from this mood
+  const pool = mood.quotes;
+  const q = pool[Math.floor(Math.random() * pool.length)];
+
+  // Update state
+  state.quote = { text: q.text, author: q.author };
+  state.bg = v.bg;
+  state.bgType = 'gradient';
+  state.customImage = null;
+  state.fontPair = FONT_PAIRS[v.fontPairIdx];
+  state.fontSize = v.fontSize;
+  state.fontWeight = v.fontWeight;
+  state.letterSpacing = v.letterSpacing;
+  state.italic = v.italic;
+  state.uppercase = v.uppercase;
+  state.textAlign = v.textAlign;
+  state.vertAlign = v.vertAlign;
+  state.tintColor = v.tintColor;
+  state.tintOpacity = v.tintOpacity;
+  state.padding = v.padding;
+  quoteColor = v.quoteColor;
+
+  // Sync all UI controls
+  syncControlsToState();
+
+  // Sync text inputs
+  document.getElementById('quote-input').value = q.text;
+  document.getElementById('author-input').value = q.author;
+  if (isMobile()) {
+    const mqi = document.getElementById('mob-quote-input');
+    const mai = document.getElementById('mob-author-input');
+    if (mqi) mqi.value = q.text;
+    if (mai) mai.value = q.author;
+  }
+
+  // Sync bg swatch visual state
+  document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+
+  // Animate the quote text
+  const textEl = document.getElementById('quote-text-el');
+  const authorEl = document.getElementById('quote-author-el');
+  textEl.classList.remove('quote-enter');
+  authorEl.classList.remove('quote-enter');
+  void textEl.offsetWidth;
+  textEl.classList.add('quote-enter');
+  authorEl.classList.add('quote-enter');
+
+  // Also sync quote colors UI
+  document.querySelectorAll('.qcolor-swatch').forEach(s => {
+    const bg = s.style.backgroundColor || s.style.background;
+    s.classList.toggle('active', bg === quoteColor);
+  });
+
+  applyState();
+}
+
+// ── Keyboard close ───────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeAiModal();
+});
+
 // ══════════════════════════════════════════════════════
 //  PWA SERVICE WORKER (inline)
 // ══════════════════════════════════════════════════════
@@ -3217,5 +3928,37 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(swUrl).catch(() => {});
 }
 </script>
+
+<!-- ══ AI MOOD GENERATOR MODAL ══ -->
+<div id="ai-modal">
+  <div id="ai-modal-backdrop" onclick="closeAiModal()"></div>
+  <div id="ai-modal-box">
+
+    <!-- Header -->
+    <div class="ai-modal-header">
+      <div class="ai-modal-icon">✦</div>
+      <div>
+        <div class="ai-modal-title">AI Quote Generator</div>
+        <div class="ai-modal-sub">Choose a mood — we'll craft the perfect quote for you</div>
+      </div>
+    </div>
+
+    <!-- Mood picker (step 1) -->
+    <div id="ai-mood-picker">
+      <div class="ai-mood-grid" id="ai-mood-grid"></div>
+      <button class="ai-generate-btn" id="ai-gen-btn" disabled onclick="runAiGenerate()">
+        <span>✦</span> Generate Quote
+      </button>
+    </div>
+
+    <!-- Generating animation (step 2) -->
+    <div id="ai-generating">
+      <div class="ai-gen-orb"></div>
+      <div class="ai-gen-steps" id="ai-gen-steps"></div>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
